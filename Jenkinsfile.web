@@ -13,7 +13,7 @@ pipeline {
     stage('Build and deploy Docker image') {
       steps {
         script {
-          docker.build("tokiwa-software/fzweb:${env.BRANCH_NAME}", "-f Dockerfile.web .")
+          docker.build("tokiwa-software/feeze-web:${env.BRANCH_NAME}", "-f Dockerfile.web .")
         }
       }
     }
