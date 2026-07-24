@@ -1,0 +1,52 @@
+:root {
+    --bgcol: rgb(255,255,255);
+    --peach: rgb(255, 229, 180);
+    --coral: rgb(255, 187, 110);
+    --pink: rgb(255, 218, 239);
+    --yellow: rgb(255, 255, 205);
+    --green: rgb(202 252 202);
+    --blue: rgb(186, 234, 240);
+    --dark-blue: #084298;
+    --purple: rgb(211, 198, 221);
+    --mizuiro: rgb(212, 230, 240);
+    --gray: rgb(200,200,200);
+}
+
+@media (max-width: 768px) {
+  main {
+    margin: 10px;
+  }
+}
+@media (min-width: 769px) {
+  main {
+    border-radius: 0.0em;
+    border: 1px solid;
+    padding: 10px 10px 10px 10px;
+    margin: 10px;
+  }
+}
+
+body {
+  font-family: 'Carme', sans-serif;
+  margin: 0;
+  padding: 0;
+  line-height: 1.25;
+  background-color: vart{--bgcol]
+}
+
+
+h1 {
+  font-family: 'Carme', sans-serif;
+  margin: 0;
+  padding: 0;
+  line-height: 1.5;
+  background-color: var(--mizuiro) !important;
+}
+
+h2 {
+  font-family: 'Carme', sans-serif;
+  margin: 0;
+  padding: 0;
+  line-height: 2.5;
+  background-color: var(--purple) !important;
+}
