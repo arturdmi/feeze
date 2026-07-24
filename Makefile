@@ -215,4 +215,4 @@ clean:
 .PHONY: release
 release: clean all
 	rm -f feeze_$(VERSION_AND_PLATFORM).tar.gz
-	tar cfz feeze_$(VERSION_AND_PLATFORM).tar.gz --transform s/^build/feeze_$(PLATFORM_AND_VERSION)/ build/bin build/classes build/libbpf build/libbpf_obj build/icon.svg
+	tar cfz feeze_$(VERSION_AND_PLATFORM).tar.gz --transform s/^build/feeze_$(VERSION_AND_PLATFORM)/ build/bin build/classes build/libbpf build/libbpf_obj build/icon.svg
