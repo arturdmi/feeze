@@ -86,7 +86,7 @@ jobs:
     - name: Read VERSION file
       id: getversion
       run: |
-        echo 'version=$(grep PRETTY_NAME /etc/os-release | sed -E s-.*"([^.]*)\..*-\1-g' | sed s-\ -_-g)$(cat version.txt)' >> $GITHUB_OUTPUT
+        echo 'version=$(grep PRETTY_NAME /etc/os-release | sed -E s-.*"([^.]*)\..*-\1-g' | sed s-\ -_-g)_$(cat version.txt)' >> $GITHUB_OUTPUT
 
     - name: publish release
       uses: ncipollo/release-action@339a81892b84b4eeb0f6e744e4574d79d0d9b8dd # v1.21.0

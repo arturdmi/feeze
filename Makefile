@@ -30,7 +30,7 @@ FEEZE_SRC      := $(FEEZE_REPO)/src
 FEEZE_SRC_JAVA := $(FEEZE_SRC)/java
 
 VERSION = $(shell cat $(FEEZE_REPO)/version.txt)
-PLATFORM_AND_VERSION = $(grep PRETTY_NAME /etc/os-release | sed -E s-.*"([^.]*)\..*-\1-g' | sed s-\ -_-g)$(VERSION)
+PLATFORM_AND_VERSION = $(grep PRETTY_NAME /etc/os-release | sed -E s-.*"([^.]*)\..*-\1-g' | sed s-\ -_-g)_$(VERSION)
 
 # the build directory is relative to the current dir
 BUILD_DIR     := ./build
