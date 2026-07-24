@@ -30,7 +30,8 @@ FEEZE_SRC      := $(FEEZE_REPO)/src
 FEEZE_SRC_JAVA := $(FEEZE_SRC)/java
 
 VERSION = $(shell cat $(FEEZE_REPO)/version.txt)
-PLATFORM_AND_VERSION = $(grep PRETTY_NAME /etc/os-release | sed -E s-.*"([^.]*)\..*-\1-g' | sed s-\ -_-g)_$(VERSION)
+PLATFORM = $(shell grep PRETTY_NAME /etc/os-release | sed -E 's-.*"([^.]*)\..*-\1-g' | sed s-\ -_-g)
+PLATFORM_AND_VERSION = $(PLATFORM)_$(VERSION)
 
 # the build directory is relative to the current dir
 BUILD_DIR     := ./build
@@ -66,7 +67,9 @@ JAVA_MAIN_CLASS     := dev.flang.feeze.$(JAVA_MAIN)
 .DELETE_ON_ERROR:
 
 # build all binaries
-.PHONY: all
+.PHONY: show_platform_and_version
+show_platform_and_version:
+	@echo $(PLATFORM_AND_VERSION)
 
 all: $(BUILD_DIR)/bin/feeze $(BUILD_DIR)/bin/$(RECORDER_BIN)
 
