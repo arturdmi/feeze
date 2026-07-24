@@ -31,7 +31,7 @@ FEEZE_SRC_JAVA := $(FEEZE_SRC)/java
 
 VERSION = $(shell cat $(FEEZE_REPO)/version.txt)
 PLATFORM = $(shell grep PRETTY_NAME /etc/os-release | sed -E 's-.*"([^.]*)\..*-\1-g' | sed s-\ -_-g)
-PLATFORM_AND_VERSION = $(PLATFORM)_$(VERSION)
+VERSION_AND_PLATFORM = $(VERSION)_$(PLATFORM)
 
 # the build directory is relative to the current dir
 BUILD_DIR     := ./build
@@ -67,9 +67,9 @@ JAVA_MAIN_CLASS     := dev.flang.feeze.$(JAVA_MAIN)
 .DELETE_ON_ERROR:
 
 # build all binaries
-.PHONY: show_platform_and_version
-show_platform_and_version:
-	@echo $(PLATFORM_AND_VERSION)
+.PHONY: show_version_and_platform
+show_version_and_platform:
+	@echo $(VERSION_AND_PLATFORM)
 
 all: $(BUILD_DIR)/bin/feeze $(BUILD_DIR)/bin/$(RECORDER_BIN)
 
@@ -214,5 +214,5 @@ clean:
 
 .PHONY: release
 release: clean all
-	rm -f feeze_$(PLATFORM_AND_VERSION).tar.gz
-	tar cfz feeze_$(PLATFORM_AND_VERSION).tar.gz --transform s/^build/feeze_$(PLATFORM_AND_VERSION)/ build/bin build/classes build/libbpf build/libbpf_obj build/icon.svg
+	rm -f feeze_$(VERSION_AND_PLATFORM).tar.gz
+	tar cfz feeze_$(VERSION_AND_PLATFORM).tar.gz --transform s/^build/feeze_$(PLATFORM_AND_VERSION)/ build/bin build/classes build/libbpf build/libbpf_obj build/icon.svg

@@ -86,14 +86,20 @@ jobs:
     - name: Read VERSION file
       id: getversion
       run: |
-        echo "version=$(make show_platform_and_version)" >> $GITHUB_OUTPUT
+        version="$(make show_version_and_platform)"
+        echo "version=$version" >> $GITHUB_OUTPUT
+        if (echo $version | grep dev); then
+          echo "prerelease=true" >> $GITHUB_OUTPUT
+        else
+          echo "prerelease=false" >> $GITHUB_OUTPUT
+        fi
 
     - name: publish release
       uses: ncipollo/release-action@339a81892b84b4eeb0f6e744e4574d79d0d9b8dd # v1.21.0
       with:
         artifacts: "feeze_${{ steps.getversion.outputs.version }}.tar.gz"
-        tag: "v${{ steps.getversion.outputs.version }}"
-        prerelease: false
+        tag: "feeze_${{ steps.getversion.outputs.version }}"
+        prerelease: ${{ steps.getversion.outputs.prerelease }}"
         generateReleaseNotes: false
         immutableCreate: true
         token: ${{ secrets.GITHUB_TOKEN }}
