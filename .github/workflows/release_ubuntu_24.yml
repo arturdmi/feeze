@@ -88,18 +88,14 @@ jobs:
       run: |
         version="$(make show_version_and_platform)"
         echo "version=$version" >> $GITHUB_OUTPUT
-        if (echo $version | grep dev); then
-          echo "prerelease=true" >> $GITHUB_OUTPUT
-        else
-          echo "prerelease=false" >> $GITHUB_OUTPUT
-        fi
+        echo $version | grep dev && echo "prerelease=true" >> $GITHUB_OUTPUT || echo "prerelease=false" >> $GITHUB_OUTPUT
 
     - name: publish release
       uses: ncipollo/release-action@339a81892b84b4eeb0f6e744e4574d79d0d9b8dd # v1.21.0
       with:
         artifacts: "feeze_${{ steps.getversion.outputs.version }}.tar.gz"
         tag: "feeze_${{ steps.getversion.outputs.version }}"
-        prerelease: ${{ steps.getversion.outputs.prerelease }}"
+        prerelease: ${{ steps.getversion.outputs.prerelease }}
         generateReleaseNotes: false
         immutableCreate: true
         token: ${{ secrets.GITHUB_TOKEN }}
