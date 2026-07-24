@@ -30,6 +30,7 @@ FEEZE_SRC      := $(FEEZE_REPO)/src
 FEEZE_SRC_JAVA := $(FEEZE_SRC)/java
 
 VERSION = $(shell cat $(FEEZE_REPO)/version.txt)
+PLATFORM_AND_VERSION = $(grep PRETTY_NAME /etc/os-release | sed -E s-.*"([^.]*)\..*-\1-g' | sed s-\ -_-g)_$(VERSION)
 
 # the build directory is relative to the current dir
 BUILD_DIR     := ./build
@@ -210,5 +211,5 @@ clean:
 
 .PHONY: release
 release: clean all
-	rm -f feeze_$(VERSION).tar.gz
-	tar cfz feeze_$(VERSION).tar.gz --transform s/^build/feeze_$(VERSION)/ build/bin build/classes build/libbpf build/libbpf_obj build/icon.svg
+	rm -f feeze_$(PLATFORM_AND_VERSION).tar.gz
+	tar cfz feeze_$(PLATFORM_AND_VERSION).tar.gz --transform s/^build/feeze_$(PLATFORM_AND_VERSION)/ build/bin build/classes build/libbpf build/libbpf_obj build/icon.svg
