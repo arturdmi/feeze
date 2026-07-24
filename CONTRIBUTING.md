@@ -194,6 +194,7 @@ Module identifiers to be used include
 - _rec_ the feeze recorder
 - _gui_ the feeze GUI
 - _doc_ the feeze documentation
+- _web_ the feeze.dev website contents
 - _build_ the build infrastructure, makefile, etc.
 
 <!-- TODO
