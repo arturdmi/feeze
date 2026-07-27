@@ -100,6 +100,11 @@ fi
 : "${FEEZE_JAVA_OPTIONS="-Xss$FEEZE_JAVA_STACK_SIZE"}"
 : "${FEEZE_JAVA_ADDITIONAL_OPTIONS=--enable-preview --enable-native-access=ALL-UNNAMED}"
 
+# On some systems, swing does not seem to automatically get the correct system font size.
+# As a workaround, set this factor to get a larger default font.
+#
+UI_SCALE=1.0
+
 # shellcheck disable=SC2086
 $FEEZE_JAVA \
   $FEEZE_JAVA_OPTIONS \
@@ -108,6 +113,7 @@ $FEEZE_JAVA \
   -Dfile.encoding=UTF-8 \
   -Dfeeze.home="$FEEZE_HOME" \
   -Dfeeze.command="$FEEZE_CMD" \
+  -Dsun.java2d.uiScale=$UI_SCALE \
   -p "${FEEZE_HOME}" \
   -m @MAIN_CLASS@ \
   "$@"
