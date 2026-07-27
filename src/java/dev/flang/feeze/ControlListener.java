@@ -230,6 +230,7 @@ class ControlListener
       {
       case "start recorder" ->
         {
+          _control._record.setText("starting...");
           _control._startRecorder.setEnabled(false);
           Threads.inDaemon(()->
             {
