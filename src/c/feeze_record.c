@@ -859,7 +859,7 @@ void feeze_record(const char* lib_fuzion,
       goto cleanup;
     }
 
-  if (lib_fuzion != NULL)
+  if (lib_fuzion != NULL && lib_fuzion[0] != 0)
     {
       skel->links.handle_fuzion_probe = bpf_program__attach_usdt(skel->progs.handle_fuzion_probe, -1 /* env.pid */,
                                                                  lib_fuzion, "fuzion", "probe", NULL);
