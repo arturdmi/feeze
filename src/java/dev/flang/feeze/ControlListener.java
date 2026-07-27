@@ -230,7 +230,6 @@ class ControlListener
       {
       case "start recorder" ->
         {
-          _control._record.setText("starting...");
           _control._startRecorder.setEnabled(false);
           Threads.inDaemon(()->
             {
@@ -329,18 +328,28 @@ class ControlListener
           var txt = _control._record.getText();
           var cmd = switch (txt)
             {
-            case "record" -> "FUZION_HOME '" + _control._fuzionHomeDir.getText() + "'\n" +
-                             "SHMEM_SIZE '"  + _control.shMemSize()              + "'\n" +
-                             "START '"       + _control._sharedMemName.getText() + "'\n";
-            case "stop"   -> "STOP\n";
-            default       -> throw new Error("*** unexpected text in recoder button: '"+txt+"'");
+            case "record"      ->
+            {
+               _control._record.setText("starting...");
+               yield "FUZION_HOME '" + _control._fuzionHomeDir.getText() + "'\n" +
+                     "SHMEM_SIZE '"  + _control.shMemSize()              + "'\n" +
+                     "START '"       + _control._sharedMemName.getText() + "'\n";
+            }
+            case "stop"        ->
+            {
+              _control._record.setText("stopping...");
+              yield "STOP\n";
+            }
+            case "starting...",
+                 "stopping..." -> null; // ignore
+            default            -> throw new Error("*** unexpected text in recorder button: '"+txt+"'");
             };
           BufferedWriter w;
           synchronized (ControlListener.this)
             {
               w = _recorderInput;
             }
-          if (w != null)
+          if (w != null && cmd != null)
             {
               Threads.inDaemon(()->
                          {
