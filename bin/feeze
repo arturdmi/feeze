@@ -41,7 +41,35 @@ FEEZE_BIN="$(dirname "$(readlink -f "$0")")"
 
 # output text explaining how to set path to 'java' command correctly:
 #
-fix_java="Please set \$PATH to include OpenJDK 25's 'bin' directory or set \$FEEZE_JAVA to the full path of the OpenJDK 25's 'java' command."
+fix_java="Please set \$PATH to include OpenJDK 25's 'bin' directory or set \$FEEZE_JAVA
+to the full path of the OpenJDK 25's 'java' command.
+
+To install OpenJDK 25, on ubuntu, do
+
+  > sudo apt update
+  > sudo apt install -y openjdk-25-jdk
+
+on Fedora,
+
+  > sudo yum install java-25-openjdk.x86_64
+
+To set the PATH, you might have to do
+
+  > export PATH=/usr/lib/jvm/jre-25/bin:$PATH
+
+or similar."
+
+# output text explaining how to install libgc.so corretly
+#
+fix_libgc="To intall libgc.so, on unbuntu, do
+
+  > sudo apt-get update
+  > sudo apt-get install libgc
+
+on Fedora, do
+
+  > sudo yum install libgc
+"
 
 which "$FEEZE_JAVA" >/dev/null || (
     echo 1>&2 "*** java ($FEEZE_JAVA) not found in \$PATH."
@@ -55,6 +83,12 @@ java_version=$($FEEZE_JAVA -version 2>&1 | head -n1 | grep -oE 'version "[0-9]+\
 if test "$java_version" -lt 25;  then
     echo 1>&2 "*** Java version of command '$FEEZE_JAVA' must be at least 25, it is $java_version."
     echo 1>&2 "$fix_java"
+    exit 1
+fi
+
+if !(ldconfig -p | grep libgc\.so >/dev/null); then
+    echo 1>&2 "*** libgc.so not installed."
+    echo 1>&2 "$fix_libgc"
     exit 1
 fi
 
