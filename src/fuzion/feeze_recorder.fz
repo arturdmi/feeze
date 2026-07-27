@@ -138,7 +138,7 @@ process_command(str)
 #
 process_commands ! options =>
 
-  say "Waiting for commands...\n"
+  say "ready..."
 
   read(n i32) => (io.buffered lm).read_string n
   match io.buffered lm .read_line
@@ -151,7 +151,7 @@ process_commands ! options =>
 
 # main code
 #
-say "running {envir.args.env[0]} (feeze_recorder.fz)"
+say "running $(envir.Args.env[0]) (feeze_recorder.fz)"
 o := options "<FUZION_HOME>/$LIB_FUZION" SHARED_MEM_NAME SHARED_MEM_SIZE
 o ! () ->
   lm ! ()->
