@@ -120,4 +120,21 @@ You have several options to scroll through the display:
 
 - up/down/left/right arrow keys to move the displayed area
 
-<!--  LocalWords:  img src feeze eBPF wayland fridi wiktionary fize vijs vis vītis feezes feezing feezed recurse submodules NYI sudo cond pthread uncompress -->
+### Troubleshooting
+
+#### feeze GUI elements and fonts too small
+
+Feeze's GUI uses the Java default font sizes. On some systems (e.g., Fedora Linux
+42 (Workstation Edition) with OpenJDK 25), the use font is too small. To fix
+this, you may edit the scrip `bin/feeze` and change the line
+
+    UI_SCALE=1.0
+
+to, e.g.,
+
+    UI_SCALE=2.0
+
+Note that zooming in and out on the scheduler data frame does not change the
+font size but only the size of the thread bars and other graphical elements.
+
+<!--  LocalWords:  img src feeze eBPF wayland fridi wiktionary fize vijs vis vītis feezes feezing feezed recurse submodules NYI sudo cond pthread uncompress Feeze's OpenJDK -->
