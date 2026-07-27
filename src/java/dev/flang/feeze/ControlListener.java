@@ -261,7 +261,7 @@ class ControlListener
                                     {
                                       _control._record.setText("record");
                                     }
-                                  else if (s.startsWith("Waiting for commands..."))
+                                  else if (s.startsWith("ready..."))
                                     {
                                       _control._record.setEnabled(true);
                                     }
