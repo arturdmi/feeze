@@ -93,7 +93,9 @@ get_option(s String, desired String, action String->unit)
 #
 record ! options =>
   lm ! ()->
-    l := options.env.lib_fuzion.as_c_string lm
+    lf := options.env.lib_fuzion
+    l := (if io.file.exists (io.path.of lf) then lf
+                                            else "\0").as_c_string lm
     s := options.env.shmem_name.as_c_string lm
     feeze_record l options.env.shmem_size s
 
