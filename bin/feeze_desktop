@@ -1,0 +1,42 @@
+#!/usr/bin/env sh
+
+# This file is part of the feeze tools
+#
+# The feeze tool is free software: you can redistribute it and/or modify it
+# under the terms of the GNU General Public License as published by the Free
+# Software Foundation, version 3 of the License.
+#
+# The feeze tool is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+# FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+# details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of feeze_desktop command, wrapper for desktop start of feeze GUI
+#
+#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#
+# -----------------------------------------------------------------------
+
+
+# usage: in .desktop file, set
+#
+#   Terminal=true
+#   Exec=<FEEZE_HOME>/bin/feeze_desktop
+#
+
+set -eu
+
+FEEZE_DESKTOP_CMD=$0
+FEEZE_BIN="$(dirname "$(readlink -f "$0")")"
+FEEZE="$FEEZE_BIN/feeze"
+
+# run `feeze`, in case of failure keep the terminal window open.
+("$FEEZE" || (echo >&2 "\n*** '$FEEZE' failed with rc $?"; sleep infinity))
