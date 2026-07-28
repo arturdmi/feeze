@@ -202,21 +202,27 @@ public class Feeze extends ANY implements Offsets
         if (Files.exists(d) && !Files.exists(p))
           {
             var iconfile = Path.of(System.getProperty("feeze.home"))
+              .toAbsolutePath()
               .normalize()
               .resolve("icon.svg");
-            Files.writeString(p,
-                              String.format("""
-                                            [Desktop Entry]
-                                            Encoding=UTF-8
-                                            Version=1.0
-                                            Type=Application
-                                            Terminal=false
-                                            Name=%s
-                                            Icon=%s
-                                            """,
-                                            FEEZE_APP_NAME,
-                                            iconfile
-                                            ));
+            var feeze_cmd = Path.of(System.getProperty("feeze.command"))
+              .toAbsolutePath()
+              .normalize();
+            var dotDesktop = String.format("""
+                                           [Desktop Entry]
+                                           Encoding=UTF-8
+                                           Version=1.0
+                                           Type=Application
+                                           Terminal=true
+                                           Name=%s
+                                           Icon=%s
+                                           Exec=%s
+                                           """,
+                                           FEEZE_APP_NAME,
+                                           iconfile,
+                                           feeze_cmd + "_desktop"
+                                           );
+            Files.writeString(p, dotDesktop);
           }
       }
     catch (IOException io)
