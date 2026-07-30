@@ -26,12 +26,86 @@
   }
 }
 
+header {
+  padding: 10px;
+  background: #24FF24;
+  background-color: #242424;
+  color: white;
+  border-color: #ff0000;
+  opacity: 0.8;
+}
+
+header .wrapper{
+  display: flex;
+  align-items: center;
+}
+
 body {
   font-family: 'Carme', sans-serif;
   margin: 0;
   padding: 0;
   line-height: 1.25;
   background-color: vart{--bgcol]
+}
+
+.logintext {
+  width: 118px;
+  color: #333;
+  padding: 2px 2px 2px 2px;
+  line-height: 1.2;
+  border-radius: 3px;
+  border: 1px solid #ccc;
+  font-size: .8rem;
+  letter-spacing: 1px;
+}
+
+.loginbutton {
+  border: 0;
+  padding: 2px 20px;
+  line-height: 1.2;
+  font-size: 1rem;
+  text-align: center;
+  color: #a4a;
+  border-radius: 1px;
+  background-color: rgba(220, 220, 220, 1);
+  background-image: linear-gradient(to top left,
+                                    rgba(0, 0, 0, .2),
+                                    rgba(0, 0, 0, .2) 30%,
+                                    rgba(0, 0, 0, 0));
+  white-space: nowrap;
+}
+
+.loginbutton:hover,
+.loginbutton:focus {
+  background-color: rgba(230, 230, 230, 1);
+}
+
+.loginbutton:active {
+  font-size: 1rem;
+  color: #727;
+  background-color: rgba(205, 205, 205, 1);
+}
+
+.navtitle{
+  display: inline-block;
+}
+
+
+.last-changed{
+  font-size: small;
+  text-align: right;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
 }
 
 
@@ -49,4 +123,378 @@ h2 {
   padding: 0;
   line-height: 2.5;
   background-color: var(--purple) !important;
+}
+
+a[target="_blank"] {
+  text-decoration-line: underline;
+}
+
+a[target="_blank"]::after {
+  content: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAAQElEQVR42qXKwQkAIAxDUUdxtO6/RBQkQZvSi8I/pL4BoGw/XPkh4XigPmsUgh0626AjRsgxHTkUThsG2T/sIlzdTsp52kSS1wAAAABJRU5ErkJggg==);
+  margin: 0 0.3em;
+}
+
+.d-flex{
+  display: flex !important;
+}
+
+.justify-content-between{
+  justify-content: space-between;
+}
+
+.justify-content-center{
+  justify-content: center;
+}
+
+.justify-content-end{
+  justify-content: flex-end;
+}
+
+.flex-wrap{
+  flex-wrap: wrap;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+@import url('normalize.css');
+@import url('external/style_docs.css');
+
+:root {
+    --bgcol: rgb(247,246,237);
+    --peach: rgb(255, 229, 180);
+    --coral: rgb(255, 187, 110);
+    --pink: rgb(255, 218, 239);
+    --yellow: rgb(255, 255, 205);
+    --green: rgb(202 252 202);
+    --blue: rgb(186, 234, 240);
+    --dark-blue: #084298;
+    --purple: rgb(211, 198, 221);
+    --mizuiro: rgb(212, 230, 240);
+    --gray: rgb(200,200,200);
+}
+
+*, ::after, ::before {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Carme', sans-serif;
+  margin: 0;
+  padding: 0;
+  line-height: 1.25;
+  background-color: #F7F6ED;
+}
+
+pre {
+  /* make pre work on mobile devices */
+  overflow-x: auto;
+  background-color: white;
+  padding-top: .75em;
+  padding-bottom: .75em;
+  padding-left: 2em;
+  padding-right: .75em;
+  max-width: 100ch;
+}
+
+td > pre {
+  /* no extra padding for preformatted code in a table */
+  padding: 0;
+}
+
+code{
+  background-color: white;
+  padding: 2px 5px;
+  display: inline;
+  margin: 1px 0;
+  font-family: 'Fira Mono', 'monospace';
+  font-weight: 600;
+/*  border: 1px dashed rgba(0,0,0,0.3); */
+}
+
+mono{
+  font-family: 'Fira Mono', 'monospace';
+}
+
+pre > code{
+  border: none;
+  font-weight: normal;
+  padding: 0;
+  margin: 0;
+}
+
+p {
+  text-align: left;
+  line-height: 1.5;
+  max-width: 100ch;
+}
+
+table pre {
+  overflow: initial;
+}
+
+/* img should not lead to overflow i.e. on mobile devices */
+img {
+  max-width: 100%;
+}
+
+.gray {
+  background-color: var(--gray) !important;
+}
+
+.mizuiro {
+  background-color: var(--mizuiro) !important;
+}
+
+.peach {
+  background-color: var(--peach) !important;
+}
+
+.coral {
+  background-color: var(--coral) !important;
+}
+
+.pink {
+  background-color: var(--pink) !important;
+}
+
+.yellow {
+  background-color: var(--yellow) !important;
+}
+
+.green {
+  background-color: var(--green) !important;
+}
+
+.blue {
+  background-color: var(--blue) !important;
+}
+
+.purple {
+  background-color: var(--purple) !important;
+}
+
+.white {
+  background-color: white !important;
+}
+
+.videoContainer {
+  position: relative;
+  text-align: center;
+  background-size: contain;
+  color: white;
+}
+
+.videoLink {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.logintext {
+  width: 118px;
+  color: #333;
+  padding: 2px 2px 2px 2px;
+  line-height: 1.2;
+  border-radius: 3px;
+  border: 1px solid #ccc;
+  font-size: .8rem;
+  letter-spacing: 1px;
+}
+
+.loginbutton {
+  border: 0;
+  padding: 2px 20px;
+  line-height: 1.2;
+  font-size: 1rem;
+  text-align: center;
+  color: #a4a;
+  border-radius: 1px;
+  background-color: rgba(220, 220, 220, 1);
+  background-image: linear-gradient(to top left,
+                                    rgba(0, 0, 0, .2),
+                                    rgba(0, 0, 0, .2) 30%,
+                                    rgba(0, 0, 0, 0));
+  white-space: nowrap;
+}
+
+.loginbutton:hover,
+.loginbutton:focus {
+  background-color: rgba(230, 230, 230, 1);
+}
+
+.loginbutton:active {
+  font-size: 1rem;
+  color: #727;
+  background-color: rgba(205, 205, 205, 1);
+}
+
+.navtitle{
+  display: inline-block;
+}
+
+.mydir {
+  color: #80f;
+  font-weight: bold;
+}
+
+.innerlink {
+  color: #00f;
+  cursor: pointer;
+}
+.innerlink:hover,
+.innerlink:focus {
+  text-decoration-color: #44f;
+  font-weight: bold;
+  color: #44f;
+}
+.innerlink:active {
+  text-decoration-color: #44f;
+  color: #44f;
+}
+
+a {
+    text-decoration: none;
+    color: inherit;
+    cursor: pointer;
+}
+p    a,
+li   a {
+    /* within text: underline to make clear this is a link */
+  text-decoration-line: underline;
+}
+a:hover,
+a:focus {
+  cursor: pointer;
+  font-weight: bold;
+}
+.navtitle a:hover,
+.navtitle a:focus,
+p    a:hover,
+p    a:focus,
+li   a:hover,
+li   a:focus {
+    /* in navigation title, do not use bold but shadow to keep width constant: */
+  font-weight: normal;
+  text-decoration-line: underline;
+  text-shadow: 0 0 .7px #333, 0 0 .7px #333, 0 0 .7px #333;
+}
+
+a:active {
+  text-decoration-color: #44f;
+  color: #44f;
+  cursor: pointer;
+}
+
+a:visited:hover,
+a:visited:focus {
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.nav {
+  font-size: 2rem;
+  color: #00f;
+  cursor: pointer;
+  display: inline-block;
+  text-decoration-line: none;
+}
+
+.nav:hover,
+.nav:focus {
+  transform: scale(1.3);
+  color: #66f;
+}
+.nav:active {
+  color: #88f;
+}
+.nav:visited {
+  color: #00d;
+  text-decoration-line: none;
+}
+.nav:visited:hover,
+.nav:visited:focus {
+  color: #44d;
+  text-decoration-line: none;
+}
+
+.navdead {
+  font-size: 2rem;
+  text-decoration-color: #ccc;
+  color: #ccc;
+  display: inline-block;
+}
+
+
+header {
+  padding: 10px;
+  background: #24FF24;
+  background-color: #242424;
+  color: white;
+  border-color: #ff0000;
+  opacity: 0.8;
+}
+
+header .wrapper{
+  display: flex;
+  align-items: center;
+}
+
+header .wrapper #loginStatus{
+  flex-grow: 1;
+}
+
+
+.d-grid {
+  display: grid;
+}
+
+.d-grid > * {
+  min-width: 0;
+  max-width: 100%;
 }
