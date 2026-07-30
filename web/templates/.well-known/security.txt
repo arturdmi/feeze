@@ -1,0 +1,4 @@
+Contact: mailto:info@tokiwa.software
+Expires: 2028-04-20T22:00:00.000Z
+Acknowledgments: https://feeze.dev/thanks.html
+Preferred-Languages: en, de
