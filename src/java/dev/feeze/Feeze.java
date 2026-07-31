@@ -20,12 +20,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
  *
  * Copyright (c) 2025, Tokiwa Software GmbH, Germany
  *
- * Java source code of class dev.flang.feeze.Feeze
+ * Java source code of class dev.feeze.Feeze
  *
  *---------------------------------------------------------------------*/
 
 
-package dev.flang.feeze;
+package dev.feeze;
 
 import java.io.File;
 import java.io.IOException;
@@ -181,7 +181,7 @@ public class Feeze extends ANY implements Offsets
    *
    * @see https://specifications.freedesktop.org/desktop-entry/latest/
    */
-  static String LOCAL_ICON_FILE = "dev-flang-feeze-Feeze.desktop";
+  static String LOCAL_ICON_FILE = "dev.feeze-Feeze.desktop";
 
 
   /**

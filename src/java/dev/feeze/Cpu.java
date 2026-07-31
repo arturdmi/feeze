@@ -20,67 +20,71 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
  *
  * Copyright (c) 2026, Tokiwa Software GmbH, Germany
  *
- * Java source code of class dev.flang.feeze.SystemProcess
+ * Java source code of class dev.feeze.Cpu
  *
  *---------------------------------------------------------------------*/
 
 
-package dev.flang.feeze;
+package dev.feeze;
 
-import java.util.ArrayList;
+import dev.flang.util.ANY;
 
 /*---------------------------------------------------------------------*/
 
 
 /**
- * SystemUser  represents a user in recorded data
+ * Cpu represents a CPU in recorded data
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-class SystemUser
+class Cpu extends ActionSubSet
 {
-  final Data _data;
-  int _uid;
-  String _name;
-  int _num;
-  ArrayList<SystemProcess> _processes = new ArrayList<>();
-  volatile CumulativeThread _cumulative = null;
+  final int _id;
 
-  SystemUser(Data data,
-             int uid,
-             String name,
-             int num)
+  Cpu(Data data, int id)
   {
-    _data = data;
-    _uid = uid;
-    _name = name;
-    _num = num;
+    super(data);
+    _id = id;
   }
 
-  void addProcess(SystemProcess p)
+  void addAction(int at)
   {
-    _processes.add(p);
+    if (PRECONDITIONS) require
+      (_data.kind(at) == ENTRY_KIND_SCHED_SWITCH);
+
+    super.addAction(at);
   }
 
-
-  CumulativeThread cumulative()
+  @Override
+  public boolean startsRunning(int i)
   {
-    if (_cumulative == null)
-      {
-        synchronized (this)
-          {
-            if (_cumulative == null)
-              {
-                var c = new CumulativeThread(this);
-                _cumulative = c;
-              }
-          }
-      }
-    return _cumulative;
+    return !_data.newThreadAt(at(i)).isSwapper();
+  }
+  @Override
+  public boolean continuesRunning(int i)
+  {
+    return startsRunning(i) && stopsRunning(i);
+  }
+  @Override
+  public boolean stopsRunning(int i)
+  {
+    return !_data.oldThreadAt(at(i)).isSwapper();
+  }
+  @Override
+  public boolean waking(int i)
+  {
+    return false;
+  }
+  @Override
+  public boolean wakesup(int i)
+  {
+    return false;
   }
 
+  @Override
   public String toString()
   {
-    return ""+_uid+" "+_name;
+    return "CPU#" + _id;
   }
+
 }

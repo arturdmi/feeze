@@ -20,12 +20,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
  *
  * Copyright (c) 2026, Tokiwa Software GmbH, Germany
  *
- * Java source code of class dev.flang.feeze.ControlFrame
+ * Java source code of class dev.feeze.ControlFrame
  *
  *---------------------------------------------------------------------*/
 
 
-package dev.flang.feeze;
+package dev.feeze;
 
 import java.awt.BorderLayout;
 import java.awt.Color;

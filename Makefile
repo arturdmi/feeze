@@ -61,8 +61,8 @@ BPFTOOL ?= /usr/sbin/bpftool
 
 JAVA_SOURCES := $(shell find $(FEEZE_SRC_JAVA) -name "*.java")
 JAVA_MAIN := Feeze
-JAVA_MAIN_CLASSFILE := dev/flang/feeze/$(JAVA_MAIN).class
-JAVA_MAIN_CLASS     := dev.flang.feeze.$(JAVA_MAIN)
+JAVA_MAIN_CLASSFILE := dev/feeze/$(JAVA_MAIN).class
+JAVA_MAIN_CLASS     := dev.feeze.$(JAVA_MAIN)
 
 .DELETE_ON_ERROR:
 

@@ -20,12 +20,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
  *
  * Copyright (c) 2026, Tokiwa Software GmbH, Germany
  *
- * Java source code of class dev.flang.feeze.Data
+ * Java source code of class dev.feeze.Data
  *
  *---------------------------------------------------------------------*/
 
 
-package dev.flang.feeze;
+package dev.feeze;
 
 import java.nio.ByteBuffer;
 import java.nio.MappedByteBuffer;

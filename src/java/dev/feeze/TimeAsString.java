@@ -20,12 +20,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
  *
  * Copyright (c) 2025, Tokiwa Software GmbH, Germany
  *
- * Java source code of class dev.flang.feeze.TimeAsString
+ * Java source code of class dev.feeze.TimeAsString
  *
  *---------------------------------------------------------------------*/
 
 
-package dev.flang.feeze;
+package dev.feeze;
 
 import java.util.Arrays;
 import java.util.Collections;
