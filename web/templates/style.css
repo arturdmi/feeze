@@ -10,6 +10,17 @@
     --purple: rgb(211, 198, 221);
     --mizuiro: rgb(212, 230, 240);
     --gray: rgb(200,200,200);
+
+    --tokiwa_lila: rgb(53,40,111);
+    --tokiwa_purp: rgb(108,75,153);
+    --tokiwa_blue: rgb(61,165,218);
+    --tokiwa_cyan: rgb(115,191,184);
+
+    --tokiwa_lila_pale: rgb(53,40,111, 0.25);
+    --tokiwa_purp_pale: rgb(108,75,153, 0.25);
+    --tokiwa_blue_pale: rgb(61,165,218, 0.25);
+    --tokiwa_cyan_pale: rgb(115,191,184, 0.25);
+
 }
 
 @media (max-width: 768px) {
@@ -21,8 +32,9 @@
   main {
     border-radius: 0.0em;
     border: 1px solid;
-    padding: 10px 10px 10px 10px;
-    margin: 10px;
+    padding: 20px 20px 20px 20px;
+    margin: 40px;
+    background-color: rgba(255, 255, 255, 0.6);
   }
 }
 
@@ -38,14 +50,6 @@ header {
 header .wrapper{
   display: flex;
   align-items: center;
-}
-
-body {
-  font-family: 'Carme', sans-serif;
-  margin: 0;
-  padding: 0;
-  line-height: 1.25;
-  background-color: vart{--bgcol]
 }
 
 .logintext {
@@ -114,15 +118,23 @@ h1 {
   margin: 0;
   padding: 0;
   line-height: 1.5;
-  background-color: var(--mizuiro) !important;
+  background-color: var(--tokiwa_blue_pale) !important;
 }
 
 h2 {
   font-family: 'Carme', sans-serif;
   margin: 0;
   padding: 0;
-  line-height: 2.5;
-  background-color: var(--purple) !important;
+  line-height: 1.25;
+  background-color: var(--tokiwa_purp_pale) !important;
+}
+
+h3 {
+  font-family: 'Carme', sans-serif;
+  margin: 0;
+  padding: 0;
+  line-height: 1.25;
+  background-color: var(--tokiwa_cyan_pale) !important;
 }
 
 a[target="_blank"] {
@@ -204,20 +216,6 @@ a[target="_blank"]::after {
 @import url('normalize.css');
 @import url('external/style_docs.css');
 
-:root {
-    --bgcol: rgb(247,246,237);
-    --peach: rgb(255, 229, 180);
-    --coral: rgb(255, 187, 110);
-    --pink: rgb(255, 218, 239);
-    --yellow: rgb(255, 255, 205);
-    --green: rgb(202 252 202);
-    --blue: rgb(186, 234, 240);
-    --dark-blue: #084298;
-    --purple: rgb(211, 198, 221);
-    --mizuiro: rgb(212, 230, 240);
-    --gray: rgb(200,200,200);
-}
-
 *, ::after, ::before {
   box-sizing: border-box;
 }
@@ -227,7 +225,18 @@ body {
   margin: 0;
   padding: 0;
   line-height: 1.25;
-  background-color: #F7F6ED;
+  background-color: var(--bgcol);
+}
+
+.feeze_gui_blurred {
+    position: absolute;
+    height: 100%;
+    width: 100%;
+    background-image: url("/images/feeze_gui_screenshot_large_threads_area.png");
+    background-repeat: repeat;
+    background-position: -500px -400px;
+    filter: blur(10px);
+    z-index: -1;
 }
 
 pre {
