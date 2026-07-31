@@ -1,3 +1,5 @@
+@import url('normalize.css');
+
 :root {
     --bgcol: rgb(255,255,255);
     --peach: rgb(255, 229, 180);
@@ -24,12 +26,12 @@
 }
 
 @media (max-width: 768px) {
-  main {
+  .mymain {
     margin: 10px;
   }
 }
 @media (min-width: 769px) {
-  main {
+  .mymain {
     border-radius: 0.0em;
     border: 1px solid;
     padding: 20px 20px 20px 20px;
@@ -165,56 +167,6 @@ a[target="_blank"]::after {
 .flex-wrap{
   flex-wrap: wrap;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-@import url('normalize.css');
-@import url('external/style_docs.css');
 
 *, ::after, ::before {
   box-sizing: border-box;
@@ -506,4 +458,35 @@ header .wrapper #loginStatus{
 .d-grid > * {
   min-width: 0;
   max-width: 100%;
+}
+
+.nav_bar
+{
+    padding: 1em 1em 0 1em;
+    width: 100%;
+}
+
+.nav_el
+{
+#    background-color: var(--tokiwa_blue_pale) !important;
+    padding: 0em 0.2em 0em 0.2em;
+    width: 14.4%;
+}
+
+.nav_el2
+{
+    background-color: white;
+    padding: 0.2em 1em 0.2em 1em;
+    text-align: center;
+    display: block;
+}
+
+.nav_el2:hover,
+.nav_el2:focus {
+    background-color: var(--tokiwa_lila_pale) !important;
+}
+
+.nav_el2:active
+{
+  color: var(--tokiwa_blue);
 }
