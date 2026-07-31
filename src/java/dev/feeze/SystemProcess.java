@@ -20,71 +20,52 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
  *
  * Copyright (c) 2026, Tokiwa Software GmbH, Germany
  *
- * Java source code of class dev.flang.feeze.Cpu
+ * Java source code of class dev.feeze.SystemProcess
  *
  *---------------------------------------------------------------------*/
 
 
-package dev.flang.feeze;
+package dev.feeze;
 
-import dev.flang.util.ANY;
+import java.util.ArrayList;
 
 /*---------------------------------------------------------------------*/
 
 
 /**
- * Cpu represents a CPU in recorded data
+ * SystemProcess  represents a process in recorded data
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-class Cpu extends ActionSubSet
+class SystemProcess
 {
-  final int _id;
+  int _pid;
+  int _uid;
+  String _name;
+  int _num;
+  SystemUser _user;
+  ArrayList<SystemThread> _threads = new ArrayList<>();
 
-  Cpu(Data data, int id)
+  SystemProcess(int pid,
+                int uid,
+                String name,
+                int num,
+                SystemUser u)
   {
-    super(data);
-    _id = id;
-  }
-
-  void addAction(int at)
-  {
-    if (PRECONDITIONS) require
-      (_data.kind(at) == ENTRY_KIND_SCHED_SWITCH);
-
-    super.addAction(at);
-  }
-
-  @Override
-  public boolean startsRunning(int i)
-  {
-    return !_data.newThreadAt(at(i)).isSwapper();
-  }
-  @Override
-  public boolean continuesRunning(int i)
-  {
-    return startsRunning(i) && stopsRunning(i);
-  }
-  @Override
-  public boolean stopsRunning(int i)
-  {
-    return !_data.oldThreadAt(at(i)).isSwapper();
-  }
-  @Override
-  public boolean waking(int i)
-  {
-    return false;
-  }
-  @Override
-  public boolean wakesup(int i)
-  {
-    return false;
+    _pid = pid;
+    _uid = uid;
+    _name = name;
+    _num = num;
+    _user = u;
   }
 
-  @Override
+  void addThread(SystemThread t)
+  {
+    _threads.add(t);
+  }
+
   public String toString()
   {
-    return "CPU#" + _id;
+    return _name; // +  " (#" + _pid + ")";
   }
-
 }

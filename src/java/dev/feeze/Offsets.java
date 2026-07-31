@@ -20,12 +20,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
  *
  * Copyright (c) 2025, Tokiwa Software GmbH, Germany
  *
- * Java source code of class dev.flang.feeze.Offsets
+ * Java source code of class dev.feeze.Offsets
  *
  *---------------------------------------------------------------------*/
 
 
-package dev.flang.feeze;
+package dev.feeze;
 
 /*
  * interace that defined offsets in the shared data created by the

@@ -20,12 +20,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
  *
  * Copyright (c) 2025, Tokiwa Software GmbH, Germany
  *
- * Java source code of class dev.flang.feeze.Zoom
+ * Java source code of class dev.feeze.Zoom
  *
  *---------------------------------------------------------------------*/
 
 
-package dev.flang.feeze;
+package dev.feeze;
 
 import java.awt.Color;
 import java.awt.Font;
