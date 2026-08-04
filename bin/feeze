@@ -103,7 +103,7 @@ fi
 # On some systems, swing does not seem to automatically get the correct system font size.
 # As a workaround, set this factor to get a larger default font.
 #
-: "${UI_SCALE=}"
+: "${UI_SCALE=}"   # make sure $UI_SCALE is defined to avoid error
 
 # shellcheck disable=SC2086
 $FEEZE_JAVA \
