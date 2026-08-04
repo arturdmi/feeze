@@ -63,6 +63,15 @@ A nice looking cake shop in Japan: [フィーゼ](https://nasuguru.com/feeze/).
 
 ## Building
 
+### Requirements
+
+* OpenJDK version 25 or later, the Java environment used for the GUI
+
+* `libgc1.so` (e.g. package `libgc` on Ubuntu, `gc` on Arch)
+  The Boehm-Demers-Weiser's GC that is currently used by Fuzion until an exact GC is available
+
+* BPF tools
+
 ### Building
 
 To clone the repository, do not forget to provide `--recurse-submodules`:
