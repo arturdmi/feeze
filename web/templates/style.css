@@ -25,18 +25,21 @@
 
 }
 
+.mymain {
+  border: 1px solid;
+  padding: 20px;
+  background-color: rgba(255, 255, 255, 0.6);
+}
 @media (max-width: 768px) {
   .mymain {
-    margin: 10px;
+    margin: 0px;
+    padding: 5px;
+    border: none;
   }
 }
 @media (min-width: 769px) {
   .mymain {
-    border-radius: 0.0em;
-    border: 1px solid;
-    padding: 20px 20px 20px 20px;
     margin: 40px;
-    background-color: rgba(255, 255, 255, 0.6);
   }
 }
 
@@ -181,12 +184,11 @@ body {
 }
 
 .feeze_gui_blurred {
-    position: absolute;
-    height: 100%;
-    width: 100%;
+    position: fixed;
+    inset: 0;
     background-image: url("/images/feeze_gui_screenshot_large_threads_area.png");
     background-repeat: repeat;
-    background-position: -500px -400px;
+    background-position: center;
     filter: blur(10px);
     z-index: -1;
 }
@@ -468,7 +470,7 @@ header .wrapper #loginStatus{
 
 .nav_el
 {
-#    background-color: var(--tokiwa_blue_pale) !important;
+ #   background-color: var(--tokiwa_blue_pale) !important;
     padding: 0em 0.2em 0em 0.2em;
     width: 14.4%;
 }
@@ -489,4 +491,22 @@ header .wrapper #loginStatus{
 .nav_el2:active
 {
   color: var(--tokiwa_blue);
+}
+
+@media (max-width: 768px) {
+  .nav_bar {
+    display: block;
+    padding: 0.5em;
+  }
+  .nav_bar tbody,
+  .nav_bar tr {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+  .nav_el {
+    width: auto !important;   /* убрать жёсткие 14.4% */
+    flex: 1 1 auto;
+    padding: 0;
+  }
 }
