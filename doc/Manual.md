@@ -83,7 +83,7 @@ this size, the recording will stop.
 
 Note that overwriting the data in the shared memory file, e.g., by re-starting
 the recorder while the date from an earlier trace is being displayed, may result
-in currupting the displayed data.
+in corrupting the displayed data.
 
 ### Recording Scheduling Data
 
@@ -123,18 +123,18 @@ The scheduling data window looks like this:
 
 The number of threads recorded can be overwhelmingly large. To reduce the amount
 of data displayed, there are cumulative views per user, per process (NYI: UNDER
-DEVELOPEMNT) and per thread as follows:
+DEVELOPMENT) and per thread as follows:
 
 #### cumulative per-user view
 
-Orignally, the scheduling data window it will display cumulative date per
+Originally, the scheduling data window it will display cumulative date per
 user. In this cumulative view, all processes and threads for one user will be
 collapsed into a single line.  E.g., for the root user, the cumulative view may
 look like this:
 
 <img src="images/scheduling_data_window_cumulative_root.png" alt="sample scheduling data window showing cumulative root user" width="569" />
 
-Here, a single horizontal line is labelled `all root` shows the cumulative
+Here, a single horizontal line is labeled `all root` shows the cumulative
 activity for user `root`.
 
 To graphically distinguish users easily, the background color alternates between
@@ -155,11 +155,11 @@ Using the small button on the left of a user
 
 you can enable the detailed per-thread view for this user
 
-<img src="images/scheduling_data_window_detailed_user_button.png" alt="sample scheduling data window showing threads of root user" width="62" />
+<img src="images/scheduling_data_window_detailed_user_button.png" alt="sample scheduling data window showing un-collapse user button" width="62" />
 
 which shows all the recorded processes of that user and their threads:
 
-<img src="images/scheduling_data_window_threads_root.png" alt="sample scheduling data window showing threads of root user" width="570" />
+<img src="images/scheduling_data_window_threads_root.png" alt="sample scheduling data window showing threads collapse user button" width="570" />
 
 Each thread will be shown as one horizontal line.
 
@@ -167,14 +167,14 @@ Each thread will be shown as one horizontal line.
 
 You can expand and compress the time resolution using the left or middle mouse
 buttons (see [Mouse Buttons](#Scheduling-Data-Window-Mouse-Buttons)) or by
-clicking on the buttons labelled `🠊🠈`/`🠈🠊`.  Holding the left moust button, you
+clicking on the buttons labeled `🠊🠈`/`🠈🠊`.  Holding the left mouse button, you
 can drag the displayed area.
 
 As you do this, the displayed data will be adjusted dynamically to reduce the
 space taken by inactive threads and processes such that more active threads and
 processes fit on the visible area:
 
-<img src="images/scheduling_data_window_threads_collapsed.png" alt="sample scheduling data window showing collapes threads" width="792" />
+<img src="images/scheduling_data_window_threads_collapsed.png" alt="sample scheduling data window showing collapsed threads" width="792" />
 
 Here, only processes `Xwaylend`, `firefox`, `gimp`, and `Isolated Web Co
 (Isolate)` are shown in detail, while threads of other processes are collapsed
@@ -185,11 +185,11 @@ to thin horizontal lines.
 Thread states are visualized by thickness and color of the horizontal line drawn
 for a thread. Here is an enlarged example:
 
-<img src="images/scheduling_data_window_thread_states.png" alt="sample scheduling data window showing collapes threads" width="760" />
+<img src="images/scheduling_data_window_thread_states.png" alt="sample scheduling data window showing thread states" width="760" />
 
 The meaning of the colors in detail is
 
-* very thin horizontal grey line: an inactive thread that is sleeping/blocked.
+* very thin horizontal gray line: an inactive thread that is sleeping/blocked.
 
 * thin horizontal light-blue line: `waking` a thread that was woken up from
   being sleeping/blocked, but not yet added to a CPU's ready queue
@@ -197,7 +197,7 @@ The meaning of the colors in detail is
 * horizontal blue bar: `wakesup` a thread that is ready to run waiting in a
   CPU's ready queue.
 
-* thick horizotal green bar: `running` a thread that is running a a CPU.
+* thick horizontal green bar: `running` a thread that is running a a CPU.
 
 Thread state changes performed that are caused by different threads are shown
 using blue arrows from the thread performing the state change to the affected
@@ -207,16 +207,24 @@ If thread state changes occur too frequently to be displayed at the current time
 resolutions, this dark green areas are drawn to illustrate that you need to
 expand the time resolution here:
 
-<img src="images/scheduling_data_window_state_collapse.png" alt="sample scheduling data window showing collapes threads" width="481" />
+<img src="images/scheduling_data_window_state_collapse.png" alt="sample scheduling data window showing collapsed thread states" width="481" />
 
 Note that blue arrows showing the thread causing a state change will not be
 shown in this case.
+
+Independent of the time resolution, these dark green bars will always be shown
+if there was some thread activity in the affected thread, even if it was at for
+a microscopically small interval considering the displayed time resolution. This
+is done to ensure that at any time resolution, a thread that is shown as
+sleeping was completely inactive at the displayed time.  On the flip-side, this
+means that using a highly compressed time resolution, you will see many threads
+in full width.
 
 ### Scheduling Data Window Mouse Buttons
 
 #### time scale:
 
-Expanding the time scale helps gettign a more detailed view of what is
+Expanding the time scale helps getting a more detailed view of what is
 happening, while compressing gives an overview over longer periods.
 
 * left button click/hold: expand time scale one step / repeatedly
@@ -225,7 +233,7 @@ happening, while compressing gives an overview over longer periods.
 
 #### zoom
 
-Zoom help to increase or shrink the size of the overall diplayed graph. This
+Zoom help to increase or shrink the size of the overall displayed graph. This
 helps to get the best compromise between readability and amount of data
 displayed on the screen.  Note that zooming in our out does not change the
 detail of information that is shown, it only changes the size of the graphical
@@ -256,6 +264,8 @@ The following key-combination may be used as shortcuts:
 
 * Ctrl-W close window
 
-* ctrl-Q quite feeze GUI
+* Ctrl-Q quite feeze GUI
 
 * Alt-D for `show data` button
+
+<!--  LocalWords:  img src feeze eBPF zxf dev OpenJDK libgc Boehm Demers GC NYI Weiser's Fuzion recoder sudo fuzion msg fuzion's Xwaylend firefox wakesup Ctrl  -->
