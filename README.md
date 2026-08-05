@@ -1,4 +1,6 @@
-# <img src="assets/logo.svg" alt="feeze logo" width="60" /> feeze
+<img src="assets/logo.svg" alt="feeze logo" width="60" />
+
+# feeze
 
 Interactive graphical thread and scheduling analysis tool using eBPF.
 
