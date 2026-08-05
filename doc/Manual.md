@@ -1,4 +1,6 @@
-# <img src="images/logo.svg" alt="feeze logo" width="60" /> feeze User Manual
+<img src="images/logo.svg" alt="feeze logo" width="60" />
+
+# feeze User Manual
 
 Feeze is an interactive graphical thread and scheduling analysis tool using eBPF.
 
@@ -17,7 +19,7 @@ installed. You will need to unpack the archive using
     # tar zxf feeze_VERSION_TARGET.tar.gz
 
 where `VERSION` is the feeze version and `TARGET` is the
-target Linux version it was built for. For version `0.001dev` build
+target Linux version it was built for. For version `0.001dev` built
 for `Ubuntu_24`, you will have to use
 
     # tar zxf feeze_0.001dev_Ubuntu_24.tar.gz
@@ -311,5 +313,7 @@ The following key-combination may be used as shortcuts:
 * Ctrl-W close window
 
 * Ctrl-Q quite feeze GUI
+
+Have fun!
 
 <!--  LocalWords:  img src feeze eBPF zxf dev OpenJDK libgc Boehm Demers GC NYI Weiser's Fuzion recoder sudo fuzion msg fuzion's Xwaylend firefox wakesup Ctrl  -->

@@ -1,4 +1,6 @@
-# <img src="assets/logo.svg" alt="feeze logo" width="60" /> feeze
+<img src="assets/logo.svg" alt="feeze logo" width="60" />
+
+# feeze
 
 Interactive graphical thread and scheduling analysis tool using eBPF.
 
@@ -148,5 +150,7 @@ size.
 
 Note that zooming in and out in the scheduler data frame does not change the
 font size but only the size of the thread bars and other graphical elements.
+
+Have fun!
 
 <!--  LocalWords:  img src feeze eBPF wayland fridi wiktionary fize vijs vis vītis feezes feezing feezed recurse submodules NYI sudo cond pthread uncompress Feeze's OpenJDK -->
