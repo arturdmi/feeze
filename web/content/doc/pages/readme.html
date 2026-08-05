@@ -1,0 +1,147 @@
+<h1 id="feeze"><img src="assets/logo.svg" alt="feeze logo" width="60" />
+feeze</h1>
+<p>Interactive graphical thread and scheduling analysis tool using
+eBPF.</p>
+<h2 id="goal">Goal</h2>
+<p>The goal of <em>feeze</em> is to provide an easy-to-use interactive
+tool to analyze performance related to scheduling of threads. The focus
+is on real-time behavior, i.e., finding reasons for performance outliers
+and fixing these, but it is also a goal to help to improve general
+throughput.</p>
+<h2 id="screenshot">Screenshot</h2>
+<p>A picture says more than a thousand words, so let’s start with a
+screenshot of a trace taken while a graphical Java application is
+running using wayland:</p>
+<p><img src="doc/images/scheduing_data_window.png" alt="sample scheduling data window" width="1105" /></p>
+<p>What we see on the left is a list of all threads group by users
+(<code>fridi</code> is the user name here), processes and threads. The
+top shows the time axis in µsec resolution. Threads that are running are
+shown as thick green bars, threads that are waking up or ready to run
+are thinner and blue while blocked threads are shown as thin gray
+lines.</p>
+<p>Threads that are waking up blocked threads have a blue arrow from the
+waking thread pointing to the woken up thread.</p>
+<p>Threads that are not active in or around the displayed time interval
+are collapsed to thin lines such to it is easier to focus on the active
+threads.</p>
+<h2 id="logo">Logo</h2>
+<p>Still experimenting with logos, here are the current drafts</p>
+<ul>
+<li>Screenshot extract:
+<img src="assets/logo.svg" alt="feeze logo" width="100"></li>
+<li>Stylized Text:
+<img src="assets/logo_text.svg" alt="feeze logo" width="160"></li>
+<li>Square of Stylized Text:
+<img src="assets/logo_text_sq.svg" alt="feeze logo" width="160"></li>
+</ul>
+<h2 id="name-feeze">Name <code>feeze</code></h2>
+<p>The name was chosen for its Scots meaning <em>to untwist; to unravel,
+as the end of a thread or rope</em>, which is what the tool is supposed
+to do with the threads running on your system.</p>
+<h3 id="definition-of-feeze-by-wiktionary">Definition of <a
+href="https://en.wiktionary.org/wiki/feeze">feeze by wiktionary</a></h3>
+<h4 id="etymology-3">Etymology 3</h4>
+<p>From Scots feeze, from Old Scots fize (“screw”, noun), from Dutch
+vijs (“screw”), from Middle Dutch vise (“screw, windlass, winch”), from
+Old French vis, viz (“vise, vice”), from Latin vītis (“vine”). Doublet
+of vice, vise and withe.</p>
+<h5 id="verb">Verb</h5>
+<p>feeze (third-person singular simple present feezes, present
+participle feezing, simple past and past participle feezed)
+(Scotland)</p>
+<ol type="1">
+<li>(transitive, also with off, on, up) To twist or turn with a
+screw-like motion; to screw. [from 1806]</li>
+<li>(figurative, by extension) To insinuate. [from 1813]</li>
+<li>(transitive, intransitive) To untwist; to unravel, as the end of a
+thread or rope.</li>
+<li>(obsolete, transitive, figurative, with at or up) To rub hard; to do
+a piece of work with passion.</li>
+</ol>
+<h3 id="other-uses">Other uses</h3>
+<p>A nice looking cake shop in Japan: <a
+href="https://nasuguru.com/feeze/">フィーゼ</a>.</p>
+<h2 id="building">Building</h2>
+<h3 id="requirements">Requirements</h3>
+<ul>
+<li><p>OpenJDK version 25 or later, the Java environment used for the
+GUI</p></li>
+<li><p><code>libgc1.so</code> (e.g. package <code>libgc</code> on
+Ubuntu, <code>gc</code> on Arch) The Boehm-Demers-Weiser’s GC that is
+currently used by Fuzion until an exact GC is available</p></li>
+<li><p>BPF tools</p></li>
+</ul>
+<h3 id="building-1">Building</h3>
+<p>To clone the repository, do not forget to provide
+<code>--recurse-submodules</code>:</p>
+<pre><code>&gt; git clone --recurse-submodules https://github.com/tokiwa-software/feeze</code></pre>
+<h2 id="documentation">Documentation</h2>
+<p>NYI: Documentation mostly missing</p>
+<h3 id="running-and-recording-data">Running and recording data</h3>
+<p>Currently, there is no main control window, but two command line
+tools that can be started as follows:</p>
+<pre><code>&gt; make run</code></pre>
+<p>will start the graphical interface that will display the last
+recorded data. If not data is found, this will wait until some data was
+recorded via</p>
+<pre><code>&gt; make run_recorder</code></pre>
+<p>which will record scheduling data using <code>sudo</code>, so you
+will need sudo rights and enter your password. To see some fine-grain
+activity, this will start two threads that play high-frequency
+pthread_cond_signal/wait ping-pong.</p>
+<p>Scheduling data will be passed to the graphical tool via shared
+memory mapped from file <code>/tmp/feeze_events_recorder_data</code>. To
+record new data, first delete this file using</p>
+<pre><code>&gt; rm /tmp/feeze_events_recorder_data</code></pre>
+<h3 id="graphical-display">Graphical Display</h3>
+<h4 id="the-displayed-data">The displayed data</h4>
+<p>Threads are grouped by their processes.</p>
+<p>Each thread is displayed as a horizontal line with the following
+properties</p>
+<ul>
+<li>thin Gray for inactive threads in and around the displayed area</li>
+<li>thin blue for ready or blocked threads</li>
+<li>think green for running threads</li>
+<li>thick dark green for threads that switch between
+running/ready/blocked at a time scale below the displayed
+resolution</li>
+</ul>
+<p>Depending on the displayed area and time compression, inactive
+threads might get collapsed into thin lines.</p>
+<h4 id="scrolling-through-the-display">Scrolling through the
+display</h4>
+<p>You have several options to scroll through the display:</p>
+<ul>
+<li>buttons <code>🠈🠊</code> / <code>🠊🠈</code> to compress or expand the
+time axis</li>
+<li>buttons <code>+zoom</code> / <code>-zoom</code> to zoom in or out
+(zoom both axes)</li>
+</ul>
+<h5 id="mouse-control">Mouse control</h5>
+<ul>
+<li>left / middle mouse button to uncompress / expand the time axis,
+hold to auto-repeat</li>
+<li>shift and left / middle mouse to zoom in / out, hold to
+auto-repeat</li>
+<li>left mouse button and move to drag displayed area</li>
+</ul>
+<h5 id="key-control">Key control</h5>
+<ul>
+<li>up/down/left/right arrow keys to move the displayed area</li>
+</ul>
+<h3 id="troubleshooting">Troubleshooting</h3>
+<h4 id="feeze-gui-elements-and-fonts-too-small">feeze GUI elements and
+fonts too small</h4>
+<p>Feeze’s GUI uses the Java default font sizes. On some systems (e.g.,
+Fedora Linux 42 (Workstation Edition) with OpenJDK 25), the used font is
+too small. To fix this, you may edit the scrip <code>bin/feeze</code>
+and change the line</p>
+<pre><code>UI_SCALE=1.0</code></pre>
+<p>to, e.g.,</p>
+<pre><code>UI_SCALE=2.0</code></pre>
+<p>resulting in all fonts and Java Swing GUI elements being twice the
+original size.</p>
+<p>Note that zooming in and out in the scheduler data frame does not
+change the font size but only the size of the thread bars and other
+graphical elements.</p>
+<!--  LocalWords:  img src feeze eBPF wayland fridi wiktionary fize vijs vis vītis feezes feezing feezed recurse submodules NYI sudo cond pthread uncompress Feeze's OpenJDK -->

@@ -19,7 +19,7 @@ installed. You will need to unpack the archive using
     # tar zxf feeze_VERSION_TARGET.tar.gz
 
 where `VERSION` is the feeze version and `TARGET` is the
-target Linux version it was built for. For version `0.001dev` build
+target Linux version it was built for. For version `0.001dev` built
 for `Ubuntu_24`, you will have to use
 
     # tar zxf feeze_0.001dev_Ubuntu_24.tar.gz

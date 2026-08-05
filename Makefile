@@ -66,7 +66,7 @@ JAVA_MAIN_CLASS     := dev.feeze.$(JAVA_MAIN)
 
 .DELETE_ON_ERROR:
 
-all: $(BUILD_DIR)/bin/feeze $(BUILD_DIR)/bin/feeze_desktop $(BUILD_DIR)/bin/$(RECORDER_BIN) $(BUILD_DIR)/manual/index.html
+all: $(BUILD_DIR)/bin/feeze $(BUILD_DIR)/bin/feeze_desktop $(BUILD_DIR)/bin/$(RECORDER_BIN) $(BUILD_DIR)/manual/index.html $(BUILD_DIR)/manual/readme.html
 
 # build all binaries
 .PHONY: show_version_and_platform
@@ -182,7 +182,13 @@ $(BUILD_DIR)/bin/$(RECORDER_BIN): $(BUILD_DIR)/bin/$(FZ_MAIN)
 $(BUILD_DIR)/manual/index.html: doc/Manual.md
 	mkdir -p $(@D)
 	pandoc -f markdown -t html $^ >$@
-	diff $@ web/content/pages/manual.html >/dev/null || cp $@ web/content/pages/manual.html
+	diff $@ web/content/doc/pages/manual.html >/dev/null || cp $@ web/content/doc/pages/manual.html
+	cp -rf doc/images $(@D)
+
+$(BUILD_DIR)/manual/readme.html: README.md
+	mkdir -p $(@D)
+	pandoc -f markdown -t html $^ >$@
+	diff $@ web/content/doc/pages/readme.html >/dev/null || cp $@ web/content/doc/pages/readme.html
 	cp -rf doc/images $(@D)
 
 # run the GUI. NYI: to be replaced by fuzion implementation, make taret run_control
