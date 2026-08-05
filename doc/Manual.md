@@ -101,7 +101,7 @@ memory buffer is full.
 
 Once the scheduling data has been recorded, the data can be displayed using the
 `show data` button.  This will result in opening a `Feeze Scheduling Data`
-window.  See [Scheduling Data Window][] below for details.
+window.  See [Scheduling Data Window](#Scheduling-Data-Window) below for details.
 
 ### Control Window Keyboard shortcuts
 
@@ -113,7 +113,7 @@ The following key-combination may be used as shortcuts:
 
 * Alt-D for `show data` button
 
-## [Scheduling Data Window] Scheduling Data Window
+## Scheduling Data Window
 
 The scheduling data window looks like this:
 
@@ -166,7 +166,7 @@ Each thread will be shown as one horizontal line.
 ### Time resolution and thread collapsing
 
 You can expand and compress the time resolution using the left or middle mouse
-buttons (see [Mouse Buttons][]) or by clicking on the buttons labelled
+buttons (see [Mouse Buttons](#Scheduling-Data-Window-Mouse_Buttons)) or by clicking on the buttons labelled
 `🠊🠈`/`🠈🠊`.  Holding the left moust button, you can drag the displayed area.
 
 As you do this, the displayed data will be adjusted dynamically to reduce the
@@ -211,7 +211,7 @@ expand the time resolution here:
 Note that blue arrows showing the thread causing a state change will not be
 shown in this case.
 
-### [Mouse Buttons] Scheduling Data Window Mouse Buttons
+### Scheduling Data Window Mouse Buttons
 
 #### time scale:
 
@@ -258,5 +258,3 @@ The following key-combination may be used as shortcuts:
 * ctrl-Q quite feeze GUI
 
 * Alt-D for `show data` button
-
-*** WORK IN PROGRESS ***
