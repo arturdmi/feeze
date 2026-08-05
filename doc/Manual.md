@@ -1,4 +1,4 @@
-# <img src="../assets/logo.svg" alt="feeze logo" width="60" /> feeze User Manual
+# <img src="images/logo.svg" alt="feeze logo" width="60" /> feeze User Manual
 
 Feeze is an interactive graphical thread and scheduling analysis tool using eBPF.
 
