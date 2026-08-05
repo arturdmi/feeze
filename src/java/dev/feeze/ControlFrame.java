@@ -152,7 +152,7 @@ public class ControlFrame extends JFrame
         _sharedMemName = new JTextField(Feeze.SHARED_MEM_NAME);
         _sharedMemName.setMaximumSize(new Dimension(Integer.MAX_VALUE, 2));
 
-        var shMemSizeLabel = new JLabel("Shared mmory size (KB/MB):");
+        var shMemSizeLabel = new JLabel("Shared memory size (KB/MB):");
         _sharedMemSize = new JTextField(""+(INITIAL_SHARED_MEM_SIZE/1024/1024)+"MB");
         _sharedMemSize.setMaximumSize(new Dimension(Integer.MAX_VALUE, 2));
 
