@@ -1,0 +1,254 @@
+<h1
+id="feeze-user-manual"><img src="../assets/logo.svg" alt="feeze logo" width="60" />
+feeze User Manual</h1>
+<p>Feeze is an interactive graphical thread and scheduling analysis tool
+using eBPF.</p>
+<h2 id="download-and-installation">Download and Installation</h2>
+<h3 id="feeze-releases-download">Feeze Releases Download</h3>
+<p>Downloadable releases will be published on github under <a
+href="https://github.com/tokiwa-software/feeze/releases">feeze
+releases</a>.</p>
+<h3 id="installation-from-tarball">Installation from tarball</h3>
+<p>Installing Feeze from a tarball gives you most control over where
+feeze will get installed. You will need to unpack the archive using</p>
+<pre><code># tar zxf feeze_VERSION_TARGET.tar.gz</code></pre>
+<p>where <code>VERSION</code> is the feeze version and
+<code>TARGET</code> is the target Linux version it was built for. For
+version <code>0.001dev</code> build for <code>Ubuntu_24</code>, you will
+have to use</p>
+<pre><code># tar zxf feeze_0.001dev_Ubuntu_24.tar.gz</code></pre>
+<p>The result will be a directory with a name like
+<code>feeze_VERSION_TARGET</code>, so in our example of version
+<code>0.001dev</code> build for <code>Ubuntu_24</code> the directory
+name will be <code>feeze_0.001dev_Ubuntu_24</code>.</p>
+<h3 id="required-dependencies">Required Dependencies</h3>
+<p>To run feeze, you will need to install</p>
+<ul>
+<li><p>OpenJDK version 25 or later</p>
+<p>The Java environment used for the GUI, must not be headless</p>
+<p>On ubuntu, do</p>
+<pre><code>&gt; sudo apt update
+&gt; sudo apt install -y openjdk-25-jdk</code></pre>
+<p>on Fedora,</p>
+<pre><code>&gt; sudo yum install java-25-openjdk.x86_64</code></pre>
+<p>To set the PATH, you might have to do</p>
+<pre><code>&gt; export PATH=/usr/lib/jvm/jre-25/bin:$PATH</code></pre>
+<p>or similar.</p></li>
+<li><p>libgc1.so</p>
+<p>To intall libgc.so, on unbuntu, do</p>
+<pre><code>&gt; sudo apt-get update
+&gt; sudo apt-get install libgc</code></pre>
+<p>on Fedora, do</p>
+<pre><code>&gt; sudo yum install libgc</code></pre>
+<p>This is the Boehm-Demers-Weiser’s GC that is currently used by Fuzion
+until an exact GC is available.</p></li>
+</ul>
+<h3 id="running">Running</h3>
+<p>To start the feeze GUI, run the script <code>feeze</code> in the
+<code>bin</code> directory of the installation, e.g., using</p>
+<pre><code># ./feeze_0.001dev_Ubuntu_24/bin/feeze</code></pre>
+<h2 id="feeze-control-window">Feeze Control Window</h2>
+<p>Once started, the feeze control window is opened.</p>
+<p><img src="images/control_window.png" alt="sample control window" width="638" /></p>
+<p>This window provides controls to start the feeze record, to configure
+the communication and recording, to start and stop recording and to open
+a scheduler data window.</p>
+<h3 id="starting-the-feeze-recorder">Starting the feeze recorder</h3>
+<p>Before you can start recording scheduler events, you will have to
+start the <code>feeze_recorder</code> with superuser privileges. You can
+do this using the <code>start local recoder</code> button, a prompt for
+your password will appear. Note that you will need the rights to perform
+<code>sudo</code> for this.</p>
+<p>NYI: UNDER DEVELOPMENT: Currently, the feeze recorder must run on the
+same machine as the feeze GUI. It is planned to permit running the
+recorder on another machine and communicate via a network
+connection.</p>
+<h3 id="configuring-the-fuzion-installation">Configuring the fuzion
+installation</h3>
+<p>For programs written in the Fuzion language, feeze may display trace
+points that were added to the Fuzion source code using base module
+features <code>fuzion.runtime.trace(col u8, msg String)</code> and
+<code>fuzion.runtime.trace(msg String)</code>. To use these, trace
+points must be set in the fuzion’s runtime library. For this to work,
+the path to the Fuzion installation must be given via the button
+<code>Fuzion home directory</code>.</p>
+<h3 id="configuring-shared-memory-communication">Configuring shared
+memory communication</h3>
+<p>The feeze recorder communicates with the feeze GUI via shared memory
+that is identified by a file name. This name of this file must be given
+as <code>Shared memory file</code>. This file may also be used to store
+scheduling data for later.</p>
+<p>Additionally, a maximum size of the shared memory may be given. Trace
+data may quickly grow very large, in particular when there are frequent
+thread interactions or user trace events. The
+<code>Shared memory size (KB/MB)</code> field permits setting the size
+of this shared memory. Once a recording has reached this size, the
+recording will stop.</p>
+<p>Note that overwriting the data in the shared memory file, e.g., by
+re-starting the recorder while the date from an earlier trace is being
+displayed, may result in corrupting the displayed data.</p>
+<h3 id="recording-scheduling-data">Recording Scheduling Data</h3>
+<p>The <code>record</code> button or the key combination Alt-R will
+start recording scheduling data. While recording, a blue bar next to
+<code>Used Memory:</code> will display the amount of shared memory that
+is used by the recorded data. This bar will grow continuously with the
+recording. While recording, the <code>record</code> button is changed
+into a <code>stop</code> button. This button or hitting Alt-R again will
+stop the current recording.</p>
+<p>If not stopped explicitly, the recording will stop automatically once
+the shared memory buffer is full.</p>
+<h3 id="displaying-recorded-data">Displaying recorded data</h3>
+<p>Once the scheduling data has been recorded, the data can be displayed
+using the <code>show data</code> button. This will result in opening a
+<code>Feeze Scheduling Data</code> window. See <a
+href="#Scheduling-Data-Window">Scheduling Data Window</a> below for
+details.</p>
+<h3 id="control-window-keyboard-shortcuts">Control Window Keyboard
+shortcuts</h3>
+<p>The following key-combination may be used as shortcuts:</p>
+<ul>
+<li><p>Alt-S for <code>start local recorder</code> button</p></li>
+<li><p>Alt-R for <code>record</code> button</p></li>
+<li><p>Alt-D for <code>show data</code> button</p></li>
+</ul>
+<h2 id="scheduling-data-window">Scheduling Data Window</h2>
+<p>The scheduling data window looks like this:</p>
+<p><img src="images/scheduling_data_window2.png" alt="sample scheduling data window" width="789" /></p>
+<h3 id="detailed-vs.-cumulative-user-process-thread-views">detailed
+vs. cumulative user / process / thread views</h3>
+<p>The number of threads recorded can be overwhelmingly large. To reduce
+the amount of data displayed, there are cumulative views per user, per
+process (NYI: UNDER DEVELOPMENT) and per thread as follows:</p>
+<h4 id="cumulative-per-user-view">cumulative per-user view</h4>
+<p>Originally, the scheduling data window it will display cumulative
+date per user. In this cumulative view, all processes and threads for
+one user will be collapsed into a single line. E.g., for the root user,
+the cumulative view may look like this:</p>
+<p><img src="images/scheduling_data_window_cumulative_root.png" alt="sample scheduling data window showing cumulative root user" width="569" /></p>
+<p>Here, a single horizontal line is labeled <code>all root</code> shows
+the cumulative activity for user <code>root</code>.</p>
+<p>To graphically distinguish users easily, the background color
+alternates between lilac and blue for different users.</p>
+<h4 id="cumulative-per-process-view">cumulative per-process view</h4>
+<p>NYI: UNDER DEVELOPMENT: It is planned to expand the GUI to show
+cumulative scheduling data for each process.</p>
+<p>To graphically distinguish processes easily, the background color
+user for processes alternates between different shades of the underlying
+user color.</p>
+<h4 id="per-thread-view">per-thread view</h4>
+<p>Using the small button on the left of a user</p>
+<p><img src="images/scheduling_data_window_cumulative_user_button.png" alt="sample scheduling data window showing threads of root user" width="62" /></p>
+<p>you can enable the detailed per-thread view for this user</p>
+<p><img src="images/scheduling_data_window_detailed_user_button.png" alt="sample scheduling data window showing un-collapse user button" width="62" /></p>
+<p>which shows all the recorded processes of that user and their
+threads:</p>
+<p><img src="images/scheduling_data_window_threads_root.png" alt="sample scheduling data window showing threads collapse user button" width="570" /></p>
+<p>Each thread will be shown as one horizontal line.</p>
+<p>Note the the <code>feeze_recorder</code> process and thread will also
+be shown, this is the process that collects and stores the scheduling
+data.</p>
+<h3 id="time-resolution-and-thread-collapsing">Time resolution and
+thread collapsing</h3>
+<p>You can expand and compress the time resolution using the left or
+middle mouse buttons (see <a
+href="#Scheduling-Data-Window-Mouse-Buttons">Mouse Buttons</a>) or by
+clicking on the buttons labeled <code>🠊🠈</code>/<code>🠈🠊</code>. Holding
+the left mouse button, you can drag the displayed area.</p>
+<p>As you do this, the displayed data will be adjusted dynamically to
+reduce the space taken by inactive threads and processes such that more
+active threads and processes fit on the visible area:</p>
+<p><img src="images/scheduling_data_window_threads_collapsed.png" alt="sample scheduling data window showing collapsed threads" width="792" /></p>
+<p>Here, only processes <code>Xwaylend</code>, <code>firefox</code>,
+<code>gimp</code>, and <code>Isolated Web Co (Isolate)</code> are shown
+in detail, while threads of other processes are collapsed to thin
+horizontal lines.</p>
+<h3 id="thread-state-display">Thread state Display</h3>
+<p>Thread states are visualized by thickness and color of the horizontal
+line drawn for a thread. Here is an enlarged example:</p>
+<p><img src="images/scheduling_data_window_thread_states.png" alt="sample scheduling data window showing thread states" width="760" /></p>
+<p>The meaning of the colors in detail is</p>
+<ul>
+<li><p>very thin horizontal gray line: an inactive thread that is
+sleeping/blocked.</p></li>
+<li><p>thin horizontal light-blue line: <code>waking</code> a thread
+that was woken up from being sleeping/blocked, but not yet added to a
+CPU’s ready queue</p></li>
+<li><p>horizontal blue bar: <code>wakesup</code> a thread that is ready
+to run waiting in a CPU’s ready queue.</p></li>
+<li><p>thick horizontal green bar: <code>running</code> a thread that is
+running on a CPU.</p></li>
+</ul>
+<p>Thread state changes performed that are caused by different threads
+are shown using blue arrows from the thread performing the state change
+to the affected thread.</p>
+<p>If thread state changes occur too frequently to be displayed at the
+current time resolutions, the state changes will not be drawn but
+collapsed into dark green areas. These dark green areas illustrate that
+you need to expand the time resolution here to see what is actually
+happening:</p>
+<p><img src="images/scheduling_data_window_state_collapse.png" alt="sample scheduling data window showing collapsed thread states" width="481" /></p>
+<p>Note that blue arrows showing the thread causing a state change will
+not be shown in the case of collapsed state changes due to too coarse
+time resolution.</p>
+<p>Independent of the time scale, if it is too coarse, these dark green
+bars will always be shown if there was some thread activity in the
+affected thread, even if this activity lasted for a microscopically
+small interval considering the displayed time resolution. This is done
+to ensure that at any time resolution, a thread that is shown as
+sleeping was completely inactive at the displayed time. On the
+flip-side, this means that using a highly compressed time resolution,
+you will see many threads in full width.</p>
+<h3 id="thread-tool-tips">Thread Tool Tips</h3>
+<p>Tool tips are used to display more detailed information about a
+thread state. To show this information, point the cursor on the thread
+state of interest and leave it there for a short time. A tool tip like
+the following will appear:</p>
+<p><img src="images/scheduling_data_window_tooltip.png" alt="sample scheduling data window showing thread tool tip" width="448" /></p>
+<p>Here, the tool tip shows the thread name <code>Xwayland:cs0</code>,
+its state <code>RUNNING</code> and the overall time that the thread is
+in this state <code>100µs 598ns</code>, the CPU it is running on
+<code>CPU14</code> and the point in time since the start of the
+recording that we are looking at <code>2s 167ms 974µs 688ns</code>.</p>
+<h3 id="scheduling-data-window-mouse-buttons">Scheduling Data Window
+Mouse Buttons</h3>
+<h4 id="time-scale">time scale:</h4>
+<p>Expanding the time scale helps getting a more detailed view of what
+is happening, while compressing gives an overview over longer
+periods.</p>
+<ul>
+<li><p>left button click/hold: expand time scale one step /
+repeatedly</p></li>
+<li><p>middle button click/hold: compress time scale one step /
+repeatedly</p></li>
+</ul>
+<h4 id="zoom">zoom</h4>
+<p>Zoom help to increase or shrink the size of the overall displayed
+graph. This helps to get the best compromise between readability and
+amount of data displayed on the screen. Note that zooming in our out
+does not change the detail of information that is shown, it only changes
+the size of the graphical elements.</p>
+<ul>
+<li><p>shift + left button click/hold: zoom in one step /
+repeatedly</p></li>
+<li><p>shift + middle button click/hold: zoom out one step /
+repeatedly</p></li>
+</ul>
+<h4 id="dragging">dragging</h4>
+<p>Dragging the displayed data area allows moving along the time axis
+(horizontally) and the user/processes/threads axis (vertically):</p>
+<ul>
+<li>left button hold and move to drag the displayed area</li>
+</ul>
+<h3 id="scheduling-data-window-keyboard-shortcuts">Scheduling Data
+Window Keyboard shortcuts</h3>
+<p>The following key-combination may be used as shortcuts:</p>
+<ul>
+<li><p>Alt-X expand time one step</p></li>
+<li><p>Alt-C compress time one step</p></li>
+<li><p>Alt-Z zoom in one step</p></li>
+<li><p>Alt-O zoom out one step</p></li>
+<li><p>Ctrl-W close window</p></li>
+<li><p>Ctrl-Q quite feeze GUI</p></li>
+<li><p>Alt-D for <code>show data</code> button</p></li>
+</ul>
+<!--  LocalWords:  img src feeze eBPF zxf dev OpenJDK libgc Boehm Demers GC NYI Weiser's Fuzion recoder sudo fuzion msg fuzion's Xwaylend firefox wakesup Ctrl  -->

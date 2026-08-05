@@ -71,7 +71,7 @@ JAVA_MAIN_CLASS     := dev.feeze.$(JAVA_MAIN)
 show_version_and_platform:
 	@echo $(VERSION_AND_PLATFORM)
 
-all: $(BUILD_DIR)/bin/feeze $(BUILD_DIR)/bin/feeze_desktop $(BUILD_DIR)/bin/$(RECORDER_BIN)
+all: $(BUILD_DIR)/bin/feeze $(BUILD_DIR)/bin/feeze_desktop $(BUILD_DIR)/bin/$(RECORDER_BIN) $(BUILD_DIR)/manual/index.html
 
 $(LIBBPF)/README.md $(VMLINUX_H)/README.md:
 	@echo $@
@@ -178,6 +178,12 @@ $(BUILD_DIR)/icon.svg: assets/logo.svg
 $(BUILD_DIR)/bin/$(RECORDER_BIN): $(BUILD_DIR)/bin/$(FZ_MAIN)
 	rm -f $@
 	ln -s $(FZ_MAIN) $@
+
+$(BUILD_DIR)/manual/index.html: doc/Manual.md
+	mkdir -p $(@D)
+	pandoc -f markdown -t html $^ >$@
+	diff $@ web/content/pages/manual.html || cp $@ web/content/pages/manual.html
+	cp -rf doc/images $(@D)
 
 # run the GUI. NYI: to be replaced by fuzion implementation, make taret run_control
 run: $(BUILD_DIR)/bin/feeze $(BUILD_DIR)/bin/feeze_desktop $(BUILD_DIR)/bin/$(RECORDER_BIN)
