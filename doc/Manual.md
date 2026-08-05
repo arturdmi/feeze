@@ -2,9 +2,14 @@
 
 Feeze is an interactive graphical thread and scheduling analysis tool using eBPF.
 
-## Installation
+## Download and Installation
 
-### From tarball
+### Feeze Releases Download
+
+Downloadable releases will be published on github under
+[feeze releases](https://github.com/tokiwa-software/feeze/releases).
+
+### Installation from tarball
 
 Installing Feeze from a tarball gives you most control over where feeze will get
 installed. You will need to unpack the archive using
@@ -27,11 +32,36 @@ To run feeze, you will need to install
 
 * OpenJDK version 25 or later
 
-  The Java environment used for the GUI, must not be headless, and
+  The Java environment used for the GUI, must not be headless
+
+  On ubuntu, do
+
+      > sudo apt update
+      > sudo apt install -y openjdk-25-jdk
+
+  on Fedora,
+
+      > sudo yum install java-25-openjdk.x86_64
+
+  To set the PATH, you might have to do
+
+      > export PATH=/usr/lib/jvm/jre-25/bin:$PATH
+
+  or similar.
 
 * libgc1.so
 
-  The Boehm-Demers-Weiser's GC that is currently used until by Fuzion until an exact GC is available.
+  To intall libgc.so, on unbuntu, do
+
+      > sudo apt-get update
+      > sudo apt-get install libgc
+
+  on Fedora, do
+
+      > sudo yum install libgc
+
+  This is the Boehm-Demers-Weiser's GC that is currently used by Fuzion until an
+  exact GC is available.
 
 ### Running
 
@@ -199,7 +229,7 @@ The meaning of the colors in detail is
 * horizontal blue bar: `wakesup` a thread that is ready to run waiting in a
   CPU's ready queue.
 
-* thick horizontal green bar: `running` a thread that is running a a CPU.
+* thick horizontal green bar: `running` a thread that is running on a CPU.
 
 Thread state changes performed that are caused by different threads are shown
 using blue arrows from the thread performing the state change to the affected
