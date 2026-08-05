@@ -66,12 +66,12 @@ JAVA_MAIN_CLASS     := dev.feeze.$(JAVA_MAIN)
 
 .DELETE_ON_ERROR:
 
+all: $(BUILD_DIR)/bin/feeze $(BUILD_DIR)/bin/feeze_desktop $(BUILD_DIR)/bin/$(RECORDER_BIN) $(BUILD_DIR)/manual/index.html
+
 # build all binaries
 .PHONY: show_version_and_platform
 show_version_and_platform:
 	@echo $(VERSION_AND_PLATFORM)
-
-all: $(BUILD_DIR)/bin/feeze $(BUILD_DIR)/bin/feeze_desktop $(BUILD_DIR)/bin/$(RECORDER_BIN) $(BUILD_DIR)/manual/index.html
 
 $(LIBBPF)/README.md $(VMLINUX_H)/README.md:
 	@echo $@
