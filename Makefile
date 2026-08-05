@@ -182,7 +182,7 @@ $(BUILD_DIR)/bin/$(RECORDER_BIN): $(BUILD_DIR)/bin/$(FZ_MAIN)
 $(BUILD_DIR)/manual/index.html: doc/Manual.md
 	mkdir -p $(@D)
 	pandoc -f markdown -t html $^ >$@
-	diff $@ web/content/pages/manual.html || cp $@ web/content/pages/manual.html
+	diff $@ web/content/pages/manual.html >/dev/null || cp $@ web/content/pages/manual.html
 	cp -rf doc/images $(@D)
 
 # run the GUI. NYI: to be replaced by fuzion implementation, make taret run_control
