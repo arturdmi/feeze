@@ -163,6 +163,8 @@ which shows all the recorded processes of that user and their threads:
 
 Each thread will be shown as one horizontal line.
 
+Note the the `feeze_recorder` process and thread will also be shown, this is the process that collects and stores the scheduling data.
+
 ### Time resolution and thread collapsing
 
 You can expand and compress the time resolution using the left or middle mouse
@@ -204,21 +206,35 @@ using blue arrows from the thread performing the state change to the affected
 thread.
 
 If thread state changes occur too frequently to be displayed at the current time
-resolutions, this dark green areas are drawn to illustrate that you need to
-expand the time resolution here:
+resolutions, the state changes will not be drawn but collapsed into dark green
+areas. These dark green areas illustrate that you need to expand the time
+resolution here to see what is actually happening:
 
 <img src="images/scheduling_data_window_state_collapse.png" alt="sample scheduling data window showing collapsed thread states" width="481" />
 
 Note that blue arrows showing the thread causing a state change will not be
-shown in this case.
+shown in the case of collapsed state changes due to too coarse time resolution.
 
-Independent of the time resolution, these dark green bars will always be shown
-if there was some thread activity in the affected thread, even if it was at for
-a microscopically small interval considering the displayed time resolution. This
-is done to ensure that at any time resolution, a thread that is shown as
-sleeping was completely inactive at the displayed time.  On the flip-side, this
-means that using a highly compressed time resolution, you will see many threads
-in full width.
+Independent of the time scale, if it is too coarse, these dark green bars will
+always be shown if there was some thread activity in the affected thread, even
+if this activity lasted for a microscopically small interval considering the
+displayed time resolution. This is done to ensure that at any time resolution, a
+thread that is shown as sleeping was completely inactive at the displayed time.
+On the flip-side, this means that using a highly compressed time resolution, you
+will see many threads in full width.
+
+### Thread Tool Tips
+
+Tool tips are used to display more detailed information about a thread state.
+To show this information, point the cursor on the thread state of interest and
+leave it there for a short time.  A tool tip like the following will appear:
+
+<img src="images/scheduling_data_window_tooltip.png" alt="sample scheduling data window showing thread tool tip" width="448" />
+
+Here, the tool tip shows the thread name `Xwayland:cs0`, its state `RUNNING` and
+the overall time that the thread is in this state `100µs 598ns`, the CPU it is
+running on `CPU14` and the point in time since the start of the recording that
+we are looking at `2s 167ms 974µs 688ns`.
 
 ### Scheduling Data Window Mouse Buttons
 
