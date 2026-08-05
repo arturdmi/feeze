@@ -166,8 +166,9 @@ Each thread will be shown as one horizontal line.
 ### Time resolution and thread collapsing
 
 You can expand and compress the time resolution using the left or middle mouse
-buttons (see [Mouse Buttons](#Scheduling-Data-Window-Mouse_Buttons)) or by clicking on the buttons labelled
-`🠊🠈`/`🠈🠊`.  Holding the left moust button, you can drag the displayed area.
+buttons (see [Mouse Buttons](#Scheduling-Data-Window-Mouse-Buttons)) or by
+clicking on the buttons labelled `🠊🠈`/`🠈🠊`.  Holding the left moust button, you
+can drag the displayed area.
 
 As you do this, the displayed data will be adjusted dynamically to reduce the
 space taken by inactive threads and processes such that more active threads and
