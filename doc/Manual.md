@@ -43,7 +43,7 @@ To start the feeze GUI, run the script `feeze` in the `bin` directory of the ins
 
 Once started, the feeze control window is opened.
 
-<img src="doc/images/control_window.png" alt="sample control window" width="638" />
+<img src="images/control_window.png" alt="sample control window" width="638" />
 
 This window provides controls to start the feeze record, to configure the
 communication and recording, to start and stop recording and to open a scheduler
@@ -117,7 +117,7 @@ The following key-combination may be used as shortcuts:
 
 The scheduling data window looks like this:
 
-<img src="doc/images/scheduling_data_window2.png" alt="sample scheduling data window" width="789" />
+<img src="images/scheduling_data_window2.png" alt="sample scheduling data window" width="789" />
 
 ### detailed vs. cumulative user / process / thread views
 
@@ -132,7 +132,7 @@ user. In this cumulative view, all processes and threads for one user will be
 collapsed into a single line.  E.g., for the root user, the cumulative view may
 look like this:
 
-<img src="doc/images/scheduling_data_window_cumulative_root.png" alt="sample scheduling data window showing cumulative root user" width="569" />
+<img src="images/scheduling_data_window_cumulative_root.png" alt="sample scheduling data window showing cumulative root user" width="569" />
 
 Here, a single horizontal line is labelled `all root` shows the cumulative
 activity for user `root`.
@@ -151,15 +151,15 @@ different shades of the underlying user color.
 
 Using the small button on the left of a user
 
-<img src="doc/images/scheduling_data_window_cumulative_user_button.png" alt="sample scheduling data window showing threads of root user" width="62" />
+<img src="images/scheduling_data_window_cumulative_user_button.png" alt="sample scheduling data window showing threads of root user" width="62" />
 
 you can enable the detailed per-thread view for this user
 
-<img src="doc/images/scheduling_data_window_detailed_user_button.png" alt="sample scheduling data window showing threads of root user" width="62" />
+<img src="images/scheduling_data_window_detailed_user_button.png" alt="sample scheduling data window showing threads of root user" width="62" />
 
 which shows all the recorded processes of that user and their threads:
 
-<img src="doc/images/scheduling_data_window_threads_root.png" alt="sample scheduling data window showing threads of root user" width="570" />
+<img src="images/scheduling_data_window_threads_root.png" alt="sample scheduling data window showing threads of root user" width="570" />
 
 Each thread will be shown as one horizontal line.
 
@@ -173,7 +173,7 @@ As you do this, the displayed data will be adjusted dynamically to reduce the
 space taken by inactive threads and processes such that more active threads and
 processes fit on the visible area:
 
-<img src="doc/images/scheduling_data_window_threads_collapsed.png" alt="sample scheduling data window showing collapes threads" width="792" />
+<img src="images/scheduling_data_window_threads_collapsed.png" alt="sample scheduling data window showing collapes threads" width="792" />
 
 Here, only processes `Xwaylend`, `firefox`, `gimp`, and `Isolated Web Co
 (Isolate)` are shown in detail, while threads of other processes are collapsed
@@ -184,7 +184,7 @@ to thin horizontal lines.
 Thread states are visualized by thickness and color of the horizontal line drawn
 for a thread. Here is an enlarged example:
 
-<img src="doc/images/scheduling_data_window_thread_states.png" alt="sample scheduling data window showing collapes threads" width="760" />
+<img src="images/scheduling_data_window_thread_states.png" alt="sample scheduling data window showing collapes threads" width="760" />
 
 The meaning of the colors in detail is
 
@@ -206,7 +206,7 @@ If thread state changes occur too frequently to be displayed at the current time
 resolutions, this dark green areas are drawn to illustrate that you need to
 expand the time resolution here:
 
-<img src="doc/images/scheduling_data_window_state_collapse.png" alt="sample scheduling data window showing collapes threads" width="481" />
+<img src="images/scheduling_data_window_state_collapse.png" alt="sample scheduling data window showing collapes threads" width="481" />
 
 Note that blue arrows showing the thread causing a state change will not be
 shown in this case.
