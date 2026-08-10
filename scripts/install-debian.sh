@@ -35,11 +35,7 @@ case "$DISTRO_ID" in
   *)      POLKIT_PKGS="polkitd" ;;
 esac
 
-# WORKAROUND: bin/feeze checks for libgc via `ldconfig`, which is in /sbin —
-# not in a normal user's PATH on Debian. The check then wrongly reports
-# "libgc.so not installed" although the library is present.
-# Ensure /sbin is in PATH for the autostart entries.
-Exec=xfce4-terminal --hold --command="env PATH=/sbin:/usr/sbin:\$PATH ${DIR}/bin/feeze"
+
 
 # PITFALL: --no-install-recommends is dangerous for a desktop stack. The X
 # server, video drivers and the greeter are pulled in via *recommends*, not
@@ -66,7 +62,20 @@ else
   echo "FAIL: libgc not visible to the dynamic linker"
   exit 1
 fi
+echo "=== PATH workaround ==="
+# WORKAROUND: bin/feeze calls `ldconfig` without an absolute path (line ~87 of
+# the release script). On Debian /sbin is not in a normal user's PATH, so the
+# check fails and feeze wrongly reports "libgc.so not installed" although
+# libgc1 is installed. Ubuntu happens to have /sbin in PATH, hence Debian-only.
+# Fix upstream: use /sbin/ldconfig. Until then, put /sbin on PATH everywhere.
+cat > /etc/profile.d/sbin-path.sh <<'EOF'
+export PATH="/usr/sbin:/sbin:$PATH"
+EOF
+chmod 644 /etc/profile.d/sbin-path.sh
 
+# /etc/profile.d is only read by *login* shells; xfce4-terminal starts a
+# non-login interactive shell, so add it to .bashrc as well.
+su - vagrant -c 'grep -qxF '\''export PATH="/usr/sbin:/sbin:$PATH"'\'' ~/.bashrc || echo '\''export PATH="/usr/sbin:/sbin:$PATH"'\'' >> ~/.bashrc'
 echo "=== autologin ==="
 # PITFALL: on Ubuntu, lightdm only allows passwordless login for members of
 # the 'nopasswdlogin' group. Without this the log shows
@@ -92,6 +101,8 @@ user-session=xfce
 greeter-session=slick-greeter
 EOF
 
+systemctl set-default graphical.target
+
 # GUI's "start local recorder" button uses pkexec (PolicyKit), NOT sudo,
 # so /etc/sudoers.d/vagrant does not help here.
 mkdir -p /etc/polkit-1/rules.d
@@ -104,8 +115,6 @@ polkit.addRule(function(action, subject) {
 });
 EOF
 
-systemctl set-default graphical.target
-
 echo "=== feeze ==="
 # Skip the download if the directory already exists, so repeated
 # `vagrant provision` runs stay fast (the tarball is ~5 MB).
@@ -115,6 +124,11 @@ if [ ! -d "$DIR" ]; then
   su - vagrant -c "cd \$HOME && curl -fL -o '${FEEZE_NAME}.tar.gz' '${URL}' && tar zxf '${FEEZE_NAME}.tar.gz'"
 fi
 
+# WORKAROUND: patch the release script directly — it calls `ldconfig` without
+# an absolute path, which fails on Debian where /sbin is not in the user's PATH.
+# Reported upstream; this keeps the VM usable meanwhile.
+sed -i -e 's#/sbin/ldconfig#ldconfig#g' -e 's#(ldconfig -p#(/sbin/ldconfig -p#' "${DIR}/bin/feeze"
+grep -n 'ldconfig' "${DIR}/bin/feeze"
 # The recorder needs root to load its eBPF program.
 echo 'vagrant ALL=(ALL) NOPASSWD:ALL' > /etc/sudoers.d/vagrant
 chmod 440 /etc/sudoers.d/vagrant
@@ -132,7 +146,7 @@ cat > /home/vagrant/.config/autostart/feeze.desktop <<EOF
 [Desktop Entry]
 Type=Application
 Name=feeze GUI
-Exec=xfce4-terminal --title=feeze --hold --command="${DIR}/bin/feeze"
+Exec=bash -lc "${DIR}/bin/feeze"
 Terminal=false
 EOF
 
