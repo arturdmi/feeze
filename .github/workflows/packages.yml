@@ -1,0 +1,43 @@
+name: build packages
+
+# Run manually from the Actions tab for now — no automatic trigger yet.
+on:
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: 'Release tag to package (e.g. feeze_0.001dev_Ubuntu_24)'
+        required: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Install nfpm
+        run: |
+          curl -fL -o /tmp/nfpm.tar.gz \
+            https://github.com/goreleaser/nfpm/releases/latest/download/nfpm_Linux_x86_64.tar.gz
+          sudo tar zxf /tmp/nfpm.tar.gz -C /usr/local/bin nfpm
+          nfpm --version
+
+      - name: Download and unpack the release tarball
+        run: |
+          TAG="${{ inputs.release_tag }}"
+          curl -fL -o "$TAG.tar.gz" \
+            "https://github.com/${{ github.repository }}/releases/download/$TAG/$TAG.tar.gz"
+          tar zxf "$TAG.tar.gz"
+          ls -la "$TAG"
+
+      - name: Build .deb and .rpm
+        run: |
+          TAG="${{ inputs.release_tag }}"
+          VERSION="$(echo "$TAG" | cut -d_ -f2)"
+          ./packaging/build-packages.sh "$VERSION" "$TAG"
+
+      - name: Upload as workflow artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: packages
+          path: dist/*
