@@ -53,4 +53,5 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release upload "${{ github.event.inputs.release_tag }}" dist/* --clobber
+          gh release upload "${{ github.event.inputs.release_tag }}" dist/*.deb dist/*.rpm --clobber
+          gh release view "${{ github.event.inputs.release_tag }}" --json assets --jq '.assets[].name'
