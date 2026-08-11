@@ -1,0 +1,42 @@
+# nfpm.yaml — one config, builds both .deb and .rpm
+# docs: https://nfpm.goreleaser.com/configuration/
+name: feeze
+arch: amd64
+platform: linux
+version: ${FEEZE_VERSION}
+maintainer: Tokiwa Software GmbH <info@tokiwa.software>
+description: |
+  Interactive graphical thread and scheduling analysis tool using eBPF.
+vendor: Tokiwa Software GmbH
+homepage: https://github.com/tokiwa-software/feeze
+license: AGPL-3.0
+
+# Same libraries, different package names per distribution family.
+overrides:
+  deb:
+    depends:
+      - openjdk-25-jre | openjdk-25-jdk
+      - libgc1
+  rpm:
+    depends:
+      - java-25-openjdk
+      - gc
+
+contents:
+  - src: ${FEEZE_SRC}/bin
+    dst: /usr/lib/feeze/bin
+  - src: ${FEEZE_SRC}/classes
+    dst: /usr/lib/feeze/classes
+  - src: ${FEEZE_SRC}/icon.svg
+    dst: /usr/lib/feeze/icon.svg
+
+  # libbpf/ and libbpf_obj/ are deliberately excluded: static library,
+  # object files and headers left over from the build. The recorder links
+  # libbpf statically and never references those paths at runtime.
+
+  - src: /usr/lib/feeze/bin/feeze
+    dst: /usr/bin/feeze
+    type: symlink
+  - src: /usr/lib/feeze/bin/feeze_recorder
+    dst: /usr/bin/feeze_recorder
+    type: symlink
