@@ -1,0 +1,22 @@
+release: "0.001dev"
+
+defaults:
+  memory: 4096
+  cpus: 2
+  gui: true
+
+machines:
+  - name: "ubuntu"
+    box: "bento/ubuntu-24.04"
+    family: "debian"
+    target: "Ubuntu_24"
+
+  - name: "debian"
+    box: "bento/debian-13"
+    family: "debian"
+    target: "Ubuntu_24"
+
+  - name: "fedora"
+    box: "bento/fedora-latest"
+    family: "fedora"
+    target: "Ubuntu_24"
