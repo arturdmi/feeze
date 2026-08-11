@@ -49,9 +49,21 @@ jobs:
           echo "VERSION=[$VERSION]"
           ./packaging/build-packages.sh "$VERSION" "$TAG"
 
+      - name: Build slim tar.gz
+        run: |
+          TAG="${{ github.event.inputs.release_tag }}"
+          VERSION="$(echo "$TAG" | cut -d_ -f2)"
+          OUT="feeze_${VERSION}_amd64"
+          # Same contents as the packages: no libbpf/ or libbpf_obj/, which are
+          # build artifacts and make up ~75% of the upstream tarball.
+          mkdir -p "$OUT"
+          cp -r "$TAG/bin" "$TAG/classes" "$TAG/icon.svg" "$OUT/"
+          tar czf "dist/$OUT.tar.gz" "$OUT"
+          ls -la dist/
+
       - name: Attach packages to the release
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release upload "${{ github.event.inputs.release_tag }}" dist/*.deb dist/*.rpm --clobber
+          gh release upload "${{ github.event.inputs.release_tag }}" dist/*.deb dist/*.rpm dist/*.tar.gz --clobber
           gh release view "${{ github.event.inputs.release_tag }}" --json assets --jq '.assets[].name'
