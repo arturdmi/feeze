@@ -13,7 +13,7 @@ Downloadable releases will be published on GitHub under
 
 ### Installation from tarball
 
-Installing feeze from a tarball gives you more control over where feeze will get
+Installing feeze from a tarball gives you most control over where feeze will get
 installed. You will need to unpack the archive using
 
     # tar zxf feeze_VERSION_TARGET.tar.gz
@@ -64,8 +64,6 @@ To run feeze, you will need to install
 
   This is the Boehm-Demers-Weiser's GC that is currently used by Fuzion until an
   exact GC is available.
-
-* BPF tools
 
 ### Running
 
