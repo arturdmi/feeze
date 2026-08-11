@@ -1,0 +1,69 @@
+name: build packages
+
+# Manual trigger for now — an automatic one on release publication can follow
+# once this is known to work.
+on:
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: 'Release tag to package (e.g. feeze_0.001dev_Ubuntu_24)'
+        required: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+
+      - name: Install nfpm
+        run: |
+          # Asset names carry the version (nfpm_2.47.0_Linux_x86_64.tar.gz), so
+          # /latest/download/<name> gives a 404 — ask the API for the real URL.
+          # The API repeats the same asset in several fields, hence head -n1.
+          URL=$(curl -s https://api.github.com/repos/goreleaser/nfpm/releases/latest | grep -o 'https://[^"]*_Linux_x86_64\.tar\.gz' | head -n1)
+          echo "nfpm URL=[$URL]"
+          curl -fL -o /tmp/nfpm.tar.gz "$URL"
+          sudo tar zxf /tmp/nfpm.tar.gz -C /usr/local/bin nfpm
+          nfpm --version
+
+      - name: Download and unpack the release tarball
+        run: |
+          TAG="${{ github.event.inputs.release_tag }}"
+          echo "TAG=[$TAG]"
+          # Ask the API for the asset URL instead of constructing it by hand.
+          URL=$(curl -s "https://api.github.com/repos/tokiwa-software/feeze/releases/tags/$TAG" | grep -o 'https://[^"]*\.tar\.gz' | head -n1)
+          echo "URL=[$URL]"
+          test -n "$URL" || { echo "no asset found for tag $TAG"; exit 1; }
+          curl -fL -o release.tar.gz "$URL"
+          tar zxf release.tar.gz
+          ls -la
+
+      - name: Build .deb and .rpm
+        run: |
+          sudo apt-get install -y gettext-base   # provides envsubst
+          TAG="${{ github.event.inputs.release_tag }}"
+          VERSION="$(echo "$TAG" | cut -d_ -f2)"
+          echo "VERSION=[$VERSION]"
+          ./packaging/build-packages.sh "$VERSION" "$TAG"
+
+      - name: Build slim tar.gz
+        run: |
+          TAG="${{ github.event.inputs.release_tag }}"
+          VERSION="$(echo "$TAG" | cut -d_ -f2)"
+          OUT="feeze_${VERSION}_amd64"
+          # Same contents as the packages: no libbpf/ or libbpf_obj/, which are
+          # build artifacts and make up ~75% of the upstream tarball.
+          mkdir -p "$OUT"
+          cp -r "$TAG/bin" "$TAG/classes" "$TAG/icon.svg" "$OUT/"
+          tar czf "dist/$OUT.tar.gz" "$OUT"
+          ls -la dist/
+
+      - name: Attach packages to the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release upload "${{ github.event.inputs.release_tag }}" dist/*.deb dist/*.rpm dist/*.tar.gz --clobber
+          gh release view "${{ github.event.inputs.release_tag }}" --json assets --jq '.assets[].name'
