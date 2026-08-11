@@ -20,9 +20,8 @@ jobs:
         run: |
           # Asset names carry the version (nfpm_2.47.0_Linux_x86_64.tar.gz), so
           # /latest/download/<name> gives a 404 — ask the API for the real URL.
-          URL=$(curl -s https://api.github.com/repos/goreleaser/nfpm/releases/latest \
-                | grep -o 'https://[^"]*_Linux_x86_64\.tar\.gz'
-                | head -n1)
+          # The API repeats the same asset in several fields, hence head -n1.
+          URL=$(curl -s https://api.github.com/repos/goreleaser/nfpm/releases/latest | grep -o 'https://[^"]*_Linux_x86_64\.tar\.gz' | head -n1)
           echo "nfpm URL=[$URL]"
           curl -fL -o /tmp/nfpm.tar.gz "$URL"
           sudo tar zxf /tmp/nfpm.tar.gz -C /usr/local/bin nfpm
