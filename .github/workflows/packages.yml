@@ -29,11 +29,15 @@ jobs:
 
       - name: Download and unpack the release tarball
         run: |
-          TAG="${{ inputs.release_tag }}"
-          curl -fL -o "$TAG.tar.gz" \
-            "https://github.com/${{ github.repository }}/releases/download/$TAG/$TAG.tar.gz"
-          tar zxf "$TAG.tar.gz"
-          ls -la "$TAG"
+          TAG="${{ github.event.inputs.release_tag }}"
+          echo "TAG=[$TAG]"
+          # Ask the API for the asset URL instead of constructing it by hand.
+          URL=$(curl -s "https://api.github.com/repos/tokiwa-software/feeze/releases/tags/$TAG" | grep -o 'https://[^"]*\.tar\.gz' | head -n1)
+          echo "URL=[$URL]"
+          test -n "$URL" || { echo "no asset found for tag $TAG"; exit 1; }
+          curl -fL -o release.tar.gz "$URL"
+          tar zxf release.tar.gz
+          ls -la
 
       - name: Build .deb and .rpm
         run: |
