@@ -28,13 +28,14 @@ Vagrant.configure("2") do |config|
         vb.customize ["modifyvm", :id, "--vram", "128"]
         vb.customize ["modifyvm", :id, "--graphicscontroller", "vmsvga"]
       end
-
+      unless m['family'] == 'none'
       node.vm.provision "shell",
         path: "scripts/install-#{m['family']}.sh",
         env: {
           "FEEZE_VERSION" => cfg['release'].to_s,
           "FEEZE_TARGET"  => m['target'].to_s
         }
+      end
     end
   end
 end

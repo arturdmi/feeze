@@ -20,3 +20,8 @@ machines:
     box: "bento/fedora-latest"
     family: "fedora"
     target: "Ubuntu_24"
+
+  - name: "ubuntu-pkg"
+    box: "bento/ubuntu-24.04"
+    family: "none"       # no provisioning — clean box for package testing
+    target: "Ubuntu_24"
