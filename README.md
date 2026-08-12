@@ -69,10 +69,14 @@ A nice looking cake shop in Japan: [フィーゼ](https://nasuguru.com/feeze/).
 
 * OpenJDK version 25 or later, the Java environment used for the GUI
 
-* `libgc1.so` (e.g. package `libgc` on Ubuntu, `gc` on Arch)
+* `libgc1.so` (e.g. package `libgc` on Ubuntu, `libgc1` on Debian, `gc` on Arch)
   The Boehm-Demers-Weiser's GC that is currently used by Fuzion until an exact GC is available
 
-* BPF tools
+* bpftool for the currently running kernel
+
+* libelf (required by libbpf)
+
+* pandoc (only for building the documentation)
 
 ### Building
 
