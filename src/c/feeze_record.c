@@ -47,7 +47,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 #include <pthread.h>
 #include <sys/types.h>
 #include <assert.h>
-#include <sys/sdt.h>
 
 #include "feeze_recorder_common.h"
 #include "feeze_recorder.skel.h"
