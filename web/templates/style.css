@@ -510,3 +510,31 @@ header .wrapper #loginStatus{
     padding: 0;
   }
 }
+
+/* --- login buttons: unify sizing of <input type=submit> and <a> --- */
+.loginbutton {
+  display: inline-block;
+  box-sizing: border-box;
+  min-width: 7em;
+  height: 28px;
+  padding: 0 20px;
+  margin-left: 8px;
+  font-family: inherit;
+  font-size: 1rem;
+  line-height: 28px;
+  text-align: center;
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.loginbutton:hover,
+.loginbutton:focus-visible {
+  background-color: rgb(200, 200, 200);
+  color: var(--tokiwa_lila);
+  font-weight: normal;
+}
+
+.loginbutton:active {
+  background-color: rgb(185, 185, 185);
+}
