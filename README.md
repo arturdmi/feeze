@@ -76,7 +76,7 @@ A nice looking cake shop in Japan: [フィーゼ](https://nasuguru.com/feeze/).
 
 * libelf (required by libbpf)
 
-* pandoc (only for building the documentation)
+* pandoc (only when changing the documentation, used to create html from markdown)
 
 ### Building
 
