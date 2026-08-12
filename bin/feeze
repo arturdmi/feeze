@@ -61,7 +61,7 @@ or similar."
 
 # output text explaining how to install libgc.so corretly
 #
-fix_libgc="To intall libgc.so, on unbuntu, do
+fix_libgc="To install libgc.so, on unbuntu, do
 
   > sudo apt-get update
   > sudo apt-get install libgc
