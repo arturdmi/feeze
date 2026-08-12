@@ -1,7 +1,7 @@
 release: "0.001dev"
 
 defaults:
-  memory: 4096
+  memory: 2048
   cpus: 2
   gui: true
 

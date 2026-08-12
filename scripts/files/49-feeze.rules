@@ -1,0 +1,8 @@
+// The GUI's "start local recorder" button goes through pkexec, not sudo,
+// so /etc/sudoers.d/vagrant does not cover it.
+polkit.addRule(function(action, subject) {
+    if (action.id == "org.freedesktop.policykit.exec" &&
+        subject.user == "vagrant") {
+        return polkit.Result.YES;
+    }
+});

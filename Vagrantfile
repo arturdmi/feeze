@@ -1,5 +1,10 @@
+#vagrant up          #create + boot VM (first run downloads the box, slow)
+#vagrant ssh         # log into the VM
+#vagrant halt        # graceful shutdown
+#vagrant destroy     # delete the VM completely */
 require 'yaml'
 
+# Machines are described in YAML
 CFG_PATH = File.join(File.dirname(__FILE__), 'config', 'machines.yml')
 raise "config not found: #{CFG_PATH}" unless File.exist?(CFG_PATH)
 cfg = YAML.load_file(CFG_PATH)
@@ -20,15 +25,22 @@ Vagrant.configure("2") do |config|
       node.vm.box      = m['box']
       node.vm.hostname = m['name']
 
+      # Vagrant copies only the provisioning script into the VM,
+      node.vm.synced_folder "scripts/files", "/tmp/feeze-files"
+
+      node.vm.boot_timeout = 600
+
       node.vm.provider "virtualbox" do |vb|
         vb.name   = m['name']
+
         vb.memory = m.fetch('memory', cfg['defaults']['memory'])
         vb.cpus   = m.fetch('cpus',   cfg['defaults']['cpus'])
         vb.gui    = m.fetch('gui',    cfg['defaults']['gui'])
+         # Default video memory
         vb.customize ["modifyvm", :id, "--vram", "128"]
         vb.customize ["modifyvm", :id, "--graphicscontroller", "vmsvga"]
       end
-
+      # Script manager
       node.vm.provision "shell",
         path: "scripts/install-#{m['family']}.sh",
         env: {

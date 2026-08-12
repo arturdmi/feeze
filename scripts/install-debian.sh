@@ -21,6 +21,8 @@ FEEZE_NAME="feeze_${FEEZE_VERSION}_${FEEZE_TARGET}"
 URL="https://github.com/tokiwa-software/feeze/releases/download/${FEEZE_NAME}/${FEEZE_NAME}.tar.gz"
 DIR="/home/vagrant/${FEEZE_NAME}"
 
+FILES="/tmp/feeze-files"
+
 echo "=== packages ==="
 # Second line of defence against the display-manager prompt.
 echo "lightdm shared/default-x-display-manager select lightdm" | debconf-set-selections
@@ -72,13 +74,7 @@ gpasswd -a vagrant nopasswdlogin
 #   greeter-session — lightdm ships no greeter of its own.
 #                     Must match a file in /usr/share/xgreeters/.
 mkdir -p /etc/lightdm/lightdm.conf.d
-cat > /etc/lightdm/lightdm.conf.d/50-autologin.conf <<'EOF'
-[Seat:*]
-autologin-user=vagrant
-autologin-user-timeout=0
-user-session=xfce
-greeter-session=slick-greeter
-EOF
+install -m 644 "$FILES/lightdm-autologin.conf" /etc/lightdm/lightdm.conf.d/50-autologin.conf
 
 systemctl set-default graphical.target
 
@@ -86,14 +82,7 @@ echo "=== privileges ==="
 # The GUI's "start local recorder" button goes through pkexec, not sudo, so
 # the sudoers drop-in below does not cover it.
 mkdir -p /etc/polkit-1/rules.d
-cat > /etc/polkit-1/rules.d/49-feeze.rules <<'EOF'
-polkit.addRule(function(action, subject) {
-    if (action.id == "org.freedesktop.policykit.exec" &&
-        subject.user == "vagrant") {
-        return polkit.Result.YES;
-    }
-});
-EOF
+install -m 644 "$FILES/49-feeze.rules" /etc/polkit-1/rules.d/49-feeze.rules
 
 # Loading the eBPF program needs root.
 echo 'vagrant ALL=(ALL) NOPASSWD:ALL' > /etc/sudoers.d/vagrant
@@ -124,22 +113,10 @@ echo "=== autostart ==="
 # bash -lc gives a login shell with a sane PATH; wrapping these in
 # xfce4-terminal instead tends to die with exit 127 over quoting.
 mkdir -p /home/vagrant/.config/autostart
-
-cat > /home/vagrant/.config/autostart/feeze.desktop <<EOF
-[Desktop Entry]
-Type=Application
-Name=feeze GUI
-Exec=bash -lc "${DIR}/bin/feeze"
-Terminal=false
-EOF
-
-cat > /home/vagrant/.config/autostart/feeze-recorder.desktop <<EOF
-[Desktop Entry]
-Type=Application
-Name=feeze recorder
-Exec=bash -lc "sudo ${DIR}/bin/feeze_recorder"
-Terminal=false
-EOF
+for f in feeze feeze-recorder; do
+  sed "s#@FEEZE_DIR@#${DIR}#g" "$FILES/$f.desktop.tmpl" \
+    > "/home/vagrant/.config/autostart/$f.desktop"
+done
 
 # A malformed entry is ignored silently, which is a miserable thing to debug.
 desktop-file-validate /home/vagrant/.config/autostart/feeze.desktop || echo "WARN: invalid desktop entry"

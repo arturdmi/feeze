@@ -12,6 +12,7 @@ export PATH="/usr/sbin:/sbin:$PATH"
 FEEZE_NAME="feeze_${FEEZE_VERSION}_${FEEZE_TARGET}"
 URL="https://github.com/tokiwa-software/feeze/releases/download/${FEEZE_NAME}/${FEEZE_NAME}.tar.gz"
 DIR="/home/vagrant/${FEEZE_NAME}"
+FILES="/tmp/feeze-files"
 
 echo "=== packages ==="
 # NOTE: Fedora 43 (Server Edition) has no xfce group in its metadata, so the
@@ -41,13 +42,7 @@ echo "=== autologin ==="
 # NOTE: unlike Debian/Ubuntu, Fedora's lightdm PAM config does not use a
 # 'nopasswdlogin' group — autologin works from lightdm.conf alone.
 mkdir -p /etc/lightdm/lightdm.conf.d
-cat > /etc/lightdm/lightdm.conf.d/50-autologin.conf <<'EOF'
-[Seat:*]
-autologin-user=vagrant
-autologin-user-timeout=0
-user-session=xfce
-greeter-session=slick-greeter
-EOF
+install -m 644 "$FILES/lightdm-autologin.conf" /etc/lightdm/lightdm.conf.d/50-autologin.conf
 
 systemctl set-default graphical.target
 systemctl enable lightdm
@@ -55,14 +50,7 @@ systemctl enable lightdm
 echo "=== polkit ==="
 # The GUI's "start local recorder" button uses pkexec (PolicyKit), not sudo.
 mkdir -p /etc/polkit-1/rules.d
-cat > /etc/polkit-1/rules.d/49-feeze.rules <<'EOF'
-polkit.addRule(function(action, subject) {
-    if (action.id == "org.freedesktop.policykit.exec" &&
-        subject.user == "vagrant") {
-        return polkit.Result.YES;
-    }
-});
-EOF
+install -m 644 "$FILES/49-feeze.rules" /etc/polkit-1/rules.d/49-feeze.rules
 
 # The recorder needs root to load its eBPF program.
 echo 'vagrant ALL=(ALL) NOPASSWD:ALL' > /etc/sudoers.d/vagrant
@@ -80,24 +68,13 @@ ldd "${DIR}/bin/feeze_recorder_fz" | grep 'not found' && echo "FAIL: missing lib
 
 echo "=== feeze autostart ==="
 mkdir -p /home/vagrant/.config/autostart
-
-cat > /home/vagrant/.config/autostart/feeze.desktop <<EOF
-[Desktop Entry]
-Type=Application
-Name=feeze GUI
-Exec=bash -lc "${DIR}/bin/feeze"
-Terminal=false
-EOF
-
-cat > /home/vagrant/.config/autostart/feeze-recorder.desktop <<EOF
-[Desktop Entry]
-Type=Application
-Name=feeze recorder
-Exec=bash -lc "sudo ${DIR}/bin/feeze_recorder"
-Terminal=false
-EOF
+for f in feeze feeze-recorder; do
+  sed "s#@FEEZE_DIR@#${DIR}#g" "$FILES/$f.desktop.tmpl" \
+    > "/home/vagrant/.config/autostart/$f.desktop"
+done
 
 desktop-file-validate /home/vagrant/.config/autostart/feeze.desktop || echo "WARN: invalid desktop entry"
+desktop-file-validate /home/vagrant/.config/autostart/feeze-recorder.desktop || echo "WARN: invalid desktop entry"
 chown -R vagrant:vagrant /home/vagrant/.config
 
 echo "packages: OK"
