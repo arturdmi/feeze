@@ -73,9 +73,9 @@ public class ControlFrame extends JFrame
 {
 
 
-  static int INITIAL_SHARED_MEM_SIZE = 64*1024*1024;
+  static long INITIAL_SHARED_MEM_SIZE = 64L*1024*1024;
 
-  JTextField _fuzionHomeDir           ;
+  JTextField _fuzionHomeDir;
   JTextField _sharedMemName;
   JTextField _sharedMemSize;
   JProgressBar _usedMemBar;
@@ -85,6 +85,16 @@ public class ControlFrame extends JFrame
   Data _data = null;
   String _dataName = null;
 
+
+  /**
+   * Saturating long -> int conversion
+   */
+  static int long2int(long l)
+  {
+    var l1 = Long.min(Integer.MAX_VALUE, l);
+    var l2 = Long.max(Integer.MIN_VALUE, l1);
+    return (int) l2;
+  }
 
 
   long shMemSize()
@@ -121,6 +131,7 @@ public class ControlFrame extends JFrame
       {
         // ignore, -1 will be returned.
       }
+    _usedMemBar.setMaximum(long2int(result));
     return result;
   }
 
@@ -157,7 +168,7 @@ public class ControlFrame extends JFrame
         _sharedMemSize.setMaximumSize(new Dimension(Integer.MAX_VALUE, 2));
 
         var usedMemLabel = new JLabel("Used Memory:");
-        _usedMemBar   = new JProgressBar(0, INITIAL_SHARED_MEM_SIZE);
+        _usedMemBar   = new JProgressBar(0, long2int(INITIAL_SHARED_MEM_SIZE));
         _usedMemBar.setValue(0);
         _usedMemBar.setStringPainted(true);
 
