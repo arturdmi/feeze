@@ -1855,8 +1855,14 @@ class SchedulingPanorama extends Panorama
                       }
                     _dragX += dx;
                     _dragY += dy;
-                    _leftRuler.changeWidth( dx);
-                    _topRuler .changeHeight(dy);
+                    if (e.getComponent() != _topRuler)
+                      {
+                        _leftRuler.changeWidth( dx);
+                      }
+                    if (e.getComponent() != _leftRuler)
+                      {
+                        _topRuler .changeHeight(dy);
+                      }
                   }
               }
           }
