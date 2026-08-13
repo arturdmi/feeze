@@ -6,7 +6,6 @@ PKG_LICENSE    := AGPL-3.0-only
 PKG_SUMMARY    := Interactive graphical thread and scheduling analysis tool using eBPF
 
 PKG_VERSION := $(shell sed -E 's/[-]?dev$$/~dev/' $(FEEZE_REPO)/version.txt)
-
 PKG_FULLVERSION := $(PKG_VERSION)-$(PKG_RELEASE)
 
 UNAME_M  := $(shell uname -m)
@@ -18,7 +17,8 @@ DEB_ARCH := $(shell dpkg --print-architecture 2>/dev/null || \
 
 PKG_DIR   := $(BUILD_DIR)/pkg
 PKG_ROOT  := $(PKG_DIR)/root
-PKG_SHARE := $(PKG_ROOT)/usr/share/feeze
+PKG_PREFIX := /usr/share/feeze
+PKG_SHARE := $(PKG_ROOT)$(PKG_PREFIX)
 PKG_TARDIR:= $(PKG_NAME)_$(PKG_VERSION)_linux_$(DEB_ARCH)
 
 PKG_BINARIES := $(BUILD_DIR)/bin/feeze          \
@@ -107,7 +107,7 @@ pkg-deb: pkg-stage
 	    -e 's|@HOMEPAGE@|$(PKG_HOMEPAGE)|g'                          \
 	    -e "s|@SIZE@|$$(du -ks $(PKG_DIR)/deb | cut -f1)|g"          \
 	    $(FEEZE_REPO)/packaging/control.in >$(PKG_DIR)/deb/DEBIAN/control
-	printf '#!/bin/sh\nset -e\n/usr/share/feeze/bin/feeze-postinst\nexit 0\n' \
+		printf '#!/bin/sh\nset -e\n$(PKG_PREFIX)/bin/feeze-postinst\nexit 0\n' \
 	    >$(PKG_DIR)/deb/DEBIAN/postinst
 	chmod 755 $(PKG_DIR)/deb/DEBIAN/postinst
 	dpkg-deb --root-owner-group -Zzstd --build $(PKG_DIR)/deb $(PKG_DEB_FILE)
@@ -129,40 +129,19 @@ pkg-rpm: pkg-stage
 	    -e 's|@SUMMARY@|$(PKG_SUMMARY)|g'       \
 	    -e 's|@LICENSE@|$(PKG_LICENSE)|g'       \
 	    -e 's|@HOMEPAGE@|$(PKG_HOMEPAGE)|g'     \
+		-e 's|@PREFIX@|$(PKG_PREFIX)|g'         \
 	    $(FEEZE_REPO)/packaging/feeze.spec.in >$(PKG_DIR)/rpm/SPECS/$(PKG_NAME).spec
 	rpmbuild -bb                                              \
-	  --dbpath $(abspath $(PKG_DIR)/rpm)                      \
 	  --define "_topdir $(abspath $(PKG_DIR)/rpm)"            \
 	  --define "pkgroot $(abspath $(PKG_ROOT))"               \
-	  --define "__bcond_check_build_deps 0"                   \
 	  --target $(RPM_ARCH)                                    \
 	  $(PKG_DIR)/rpm/SPECS/$(PKG_NAME).spec
-	cp $(PKG_DIR)/rpm/RPMS/$(RPM_ARCH)/$(PKG_NAME)-*.rpm .
-	for f in $(PKG_NAME)-$(PKG_VERSION)-$(PKG_RELEASE).$(RPM_ARCH).rpm; do \
-	  sha256sum "$$f" >"$$f.sha256"; done
-	@echo " + $(PKG_NAME)-$(PKG_VERSION)-$(PKG_RELEASE).$(RPM_ARCH).rpm"
-
-# .PHONY: pkg-rpm
-# pkg-rpm: pkg-stage
-# 	rm -rf $(PKG_DIR)/rpm
-# 	mkdir -p $(PKG_DIR)/rpm/SPECS $(PKG_DIR)/rpm/BUILD $(PKG_DIR)/rpm/RPMS $(PKG_DIR)/rpm/SOURCES
-# 	sed -e 's|@NAME@|$(PKG_NAME)|g'             \
-# 	    -e 's|@VERSION@|$(PKG_VERSION)|g'       \
-# 	    -e 's|@RELEASE@|$(PKG_RELEASE)|g'       \
-# 	    -e 's|@SUMMARY@|$(PKG_SUMMARY)|g'       \
-# 	    -e 's|@LICENSE@|$(PKG_LICENSE)|g'       \
-# 	    -e 's|@HOMEPAGE@|$(PKG_HOMEPAGE)|g'     \
-# 	    $(FEEZE_REPO)/packaging/feeze.spec.in >$(PKG_DIR)/rpm/SPECS/$(PKG_NAME).spec
-# 	rpmbuild -bb                                              \
-# 	--dbpath $(abspath $(PKG_DIR)/rpm)                      \
-# 	  --define "_topdir $(abspath $(PKG_DIR)/rpm)"            \
-# 	  --define "pkgroot $(abspath $(PKG_ROOT))"               \
-# 	  --target $(RPM_ARCH)                                    \
-# 	  $(PKG_DIR)/rpm/SPECS/$(PKG_NAME).spec
-# 	cp $(PKG_DIR)/rpm/RPMS/$(RPM_ARCH)/$(PKG_NAME)-*.rpm .
-# 	for f in $(PKG_NAME)-$(PKG_VERSION)-$(PKG_RELEASE).$(RPM_ARCH).rpm; do \
-# 	  sha256sum "$$f" >"$$f.sha256"; done
-# 	@echo " + $(PKG_NAME)-$(PKG_VERSION)-$(PKG_RELEASE).$(RPM_ARCH).rpm"
+	for f in $(PKG_DIR)/rpm/RPMS/$(RPM_ARCH)/*.rpm; do        \
+	  cp "$$f" . ;                                            \
+	  b=$$(basename "$$f") ;                                  \
+	  sha256sum "$$b" >"$$b.sha256" ;                         \
+	  echo " + $$b" ;                                         \
+	done
 
 .PHONY: pkg-clean
 pkg-clean:

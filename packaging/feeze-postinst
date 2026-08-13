@@ -1,14 +1,27 @@
 #!/bin/sh
-set -e
+# Shared post-install hook, invoked from DEBIAN/postinst and from %post in the
+# spec so that deb and rpm cannot drift apart.
+set -eu
 
-# 1. Обновление кэша ярлыков рабочего стола (XDG Desktop Entry)
-if [ -x "$(command -v update-desktop-database)" ]; then
-    update-desktop-database -q /usr/share/applications || true
+REC=/usr/share/feeze/bin/feeze_recorder_fz
+
+# Loading BPF programs and reading perf events needs CAP_BPF + CAP_PERFMON;
+# pinning maps needs CAP_SYS_RESOURCE on older kernels. Granting them here
+# avoids running the whole GUI as root. Failure is not fatal: the recorder
+# still works under sudo.
+if command -v setcap >/dev/null 2>&1 && [ -f "$REC" ]; then
+  setcap cap_bpf,cap_perfmon,cap_sys_resource+ep "$REC" 2>/dev/null \
+    || echo "feeze: could not set capabilities on $REC, run feeze_recorder as root" >&2
+else
+  echo "feeze: setcap unavailable, run feeze_recorder as root" >&2
 fi
 
-# 2. Обновление кэша системных иконок
-if [ -x "$(command -v gtk-update-icon-cache)" ]; then
-    gtk-update-icon-cache -q -t -f /usr/share/icons/hicolor || true
+if command -v update-desktop-database >/dev/null 2>&1; then
+  update-desktop-database -q /usr/share/applications || true
+fi
+
+if command -v gtk-update-icon-cache >/dev/null 2>&1; then
+  gtk-update-icon-cache -q -t -f /usr/share/icons/hicolor || true
 fi
 
 exit 0

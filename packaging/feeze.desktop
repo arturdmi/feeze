@@ -1,9 +1,16 @@
 [Desktop Entry]
 Version=1.0
 Type=Application
-Name=Feeze
-Comment=Feeze Application
+Name=feeze
+GenericName=Thread and scheduling analysis
+Comment=Interactive graphical thread and scheduling analysis tool using eBPF
 Exec=feeze
 Icon=feeze
-Terminal=false
-Categories=Utility;Development;
+# The recorder may prompt for elevated privileges and prints diagnostics on
+# stderr, so keep a terminal attached.
+Terminal=true
+Categories=Development;Profiling;
+Keywords=eBPF;scheduler;threads;tracing;latency;
+# Matches the WM_CLASS that the JVM derives from the main class, so the window
+# is grouped with this launcher instead of appearing as a generic Java app.
+StartupWMClass=dev-feeze-Feeze
