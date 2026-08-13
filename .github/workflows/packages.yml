@@ -67,29 +67,22 @@ jobs:
             make clang llvm libelf-dev zlib1g-dev libgc-dev pkg-config file \
             dpkg-dev rpm zstd libcap2-bin
 
-      - name: Provide Prebuilt Static bpftool (ARM64 & AMD64)
+      - name: Provide static bpftool
+        env:
+          BPFTOOL_VERSION: v7.5.0
         run: |
           set -eux
-          # Качаем официальный статический bpftool, который работает ВЕЗДЕ
-          # Выбираем архитектуру на основе текущего раннера
-          ARCH="${{ matrix.arch }}"
-          if [ "$ARCH" = "amd64" ]; then BPF_ARCH="x86_64"; else BPF_ARCH="aarch64"; fi
-
-          curl -LO "https://github.com{BPF_ARCH}.tar.gz"
-          tar -xzf bpftool-v7.5.0-${BPF_ARCH}.tar.gz
-
-          sudo mv bpftool /usr/local/bin/bpftool
-          chmod +x /usr/local/bin/bpftool
+          # Release assets are named by Go-style arch, which matches matrix.arch
+          # directly: bpftool-v7.5.0-amd64.tar.gz / -arm64.tar.gz
+          url="https://github.com/libbpf/bpftool/releases/download/${BPFTOOL_VERSION}/bpftool-${BPFTOOL_VERSION}-${{ matrix.arch }}.tar.gz"
+          curl -fsSL -o /tmp/bpftool.tar.gz "$url"
+          tar xzf /tmp/bpftool.tar.gz -C /tmp
+          sudo install -m 755 /tmp/bpftool /usr/local/bin/bpftool
+          # The Makefile honours BPFTOOL (BPFTOOL ?= /usr/sbin/bpftool) and
+          # checks the path with `test -f`, so exporting it is enough.
           echo "BPFTOOL=/usr/local/bin/bpftool" >>"$GITHUB_ENV"
           /usr/local/bin/bpftool version
 
-      - name: Locate bpftool
-        run: |
-          set -eu
-          for c in /usr/sbin/bpftool /usr/bin/bpftool $(command -v bpftool || true); do
-            if [ -x "$c" ]; then echo "BPFTOOL=$c" >>"$GITHUB_ENV"; "$c" version; exit 0; fi
-          done
-          echo "::error::bpftool not found - BPF skeleton generation will fail"; exit 1
 
       - uses: actions/setup-java@v5
         with:
