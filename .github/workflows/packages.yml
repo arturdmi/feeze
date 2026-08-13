@@ -65,6 +65,7 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends \
             make clang llvm libelf-dev zlib1g-dev libgc-dev pkg-config file \
+            systemtap-sdt-dev \
             dpkg-dev rpm zstd libcap2-bin
 
       - name: Provide static bpftool
