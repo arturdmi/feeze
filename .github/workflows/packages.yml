@@ -1,69 +1,198 @@
-name: build packages
+name: Build feeze
 
-# Manual trigger for now — an automatic one on release publication can follow
-# once this is known to work.
 on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  pull_request:
   workflow_dispatch:
-    inputs:
-      release_tag:
-        description: 'Release tag to package (e.g. feeze_0.001dev_Ubuntu_24)'
-        required: true
+
+permissions:
+  contents: read
+
+env:
+  JAVA_VERSION: '25'
+  FUZION_VERSION: '0.098'
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
+
+  facts:
+    name: Facts
+    runs-on: ubuntu-24.04
+    outputs:
+      version: ${{ steps.f.outputs.version }}
+      release-kind: ${{ steps.f.outputs.release-kind }}
+    steps:
+      - uses: actions/checkout@v5
+      - id: f
+        run: |
+          set -eu
+          if [ "$GITHUB_REF_TYPE" = "tag" ]; then
+            echo "version=${GITHUB_REF_NAME#v}" >>"$GITHUB_OUTPUT"
+            echo "release-kind=release"         >>"$GITHUB_OUTPUT"
+          else
+            echo "version=$(cat version.txt)"   >>"$GITHUB_OUTPUT"
+            echo "release-kind=nightly"         >>"$GITHUB_OUTPUT"
+          fi
+
+  # ---------------------------------------------------------------------------
+  # One native runner per architecture. Cross-building is not possible: `fz -c`
+  # drives clang with host settings and links a host-architecture
+  # libfuzion_rt.so. All packaging logic lives in packaging.mk; this job only
+  # provides the toolchain and calls make.
+  # ---------------------------------------------------------------------------
+  package-linux:
+    name: Package for Linux (${{ matrix.arch }})
+    needs: [facts]
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { arch: amd64, runner: ubuntu-24.04,     elf_arch: x86-64,  vmlinux_arch: x86_64 }
+          - { arch: arm64, runner: ubuntu-24.04-arm, elf_arch: aarch64, vmlinux_arch: arm64 }
+    env:
+      VERSION: ${{ needs.facts.outputs.version }}
+      RELEASE_KIND: ${{ needs.facts.outputs.release-kind }}
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          submodules: recursive
+
+      - name: Install build and packaging dependencies
+        run: |
+          set -eux
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            make clang llvm libelf-dev zlib1g-dev libgc-dev pkg-config file \
+            dpkg-dev rpm zstd libcap2-bin
+          sudo apt-get install -y --no-install-recommends bpftool \
+            || sudo apt-get install -y --no-install-recommends linux-tools-common linux-tools-generic
+
+      - name: Locate bpftool
+        run: |
+          set -eu
+          for c in /usr/sbin/bpftool /usr/bin/bpftool $(command -v bpftool || true); do
+            if [ -x "$c" ]; then echo "BPFTOOL=$c" >>"$GITHUB_ENV"; "$c" version; exit 0; fi
+          done
+          echo "::error::bpftool not found - BPF skeleton generation will fail"; exit 1
+
+      - uses: actions/setup-java@v5
+        with:
+          distribution: zulu          # ships jmods for amd64 and arm64
+          java-version: ${{ env.JAVA_VERSION }}
+
+      - name: Cache Fuzion toolchain
+        id: fuzion-cache
+        uses: actions/cache@v4
+        with:
+          path: .fuzion-home
+          key: fuzion-${{ env.FUZION_VERSION }}-${{ matrix.arch }}-jdk${{ env.JAVA_VERSION }}
+
+      # The published fuzion release contains a native lib/libfuzion_rt.so, so
+      # it is only usable when it matches this runner. Probe it and fall back to
+      # a source build.
+      - name: Provide Fuzion toolchain
+        if: steps.fuzion-cache.outputs.cache-hit != 'true'
+        run: |
+          set -eux
+          work="$(mktemp -d)"; ok=0
+          if curl -fsSL -o "$work/f.tar.gz" \
+              "https://github.com/tokiwa-software/fuzion/releases/download/v${FUZION_VERSION}/fuzion_${FUZION_VERSION}.tar.gz"; then
+            tar xzf "$work/f.tar.gz" -C "$work"
+            home="$work/fuzion_${FUZION_VERSION}"
+            file "$home/lib/libfuzion_rt.so" | grep -q '${{ matrix.elf_arch }}' && ok=1 \
+              || echo "::notice::prebuilt fuzion is not ${{ matrix.elf_arch }}, building from source"
+          fi
+          if [ "$ok" -eq 0 ]; then
+            git clone --depth 1 --branch "v${FUZION_VERSION}" https://github.com/tokiwa-software/fuzion "$work/src" \
+              || git clone --depth 1 https://github.com/tokiwa-software/fuzion "$work/src"
+            make -C "$work/src" -j"$(nproc)"
+            home="$work/src/build"
+          fi
+          rm -rf .fuzion-home && cp -a "$home" .fuzion-home
+
+      - name: Export FUZION_HOME
+        run: echo "FUZION_HOME=$GITHUB_WORKSPACE/.fuzion-home" >>"$GITHUB_ENV"
+
+      # Temporary: drop once the arch-parametrised Makefile is merged.
+      - name: Patch Makefile for multi-arch
+        run: |
+          set -eu
+          if grep -q 'vmlinux.h/include/x86_64/' Makefile; then
+            echo "::warning::patching hardcoded vmlinux.h arch path"
+            sed -i "s#vmlinux.h/include/x86_64/#vmlinux.h/include/${{ matrix.vmlinux_arch }}/#" Makefile
+          fi
+          if grep -q "sed 's/x86_64/x86/'" Makefile; then
+            sed -i "s#sed 's/x86_64/x86/'#sed -e 's/x86_64/x86/' -e 's/aarch64/arm64/'#" Makefile
+          fi
+
+      # Build only what is shipped: `make all` also runs the pandoc manual
+      # rules, which write back into web/content/ and dirty the working tree.
+      - name: Build
+        run: make -j"$(nproc)" build/bin/feeze build/bin/feeze_desktop build/bin/feeze_recorder
+
+      - name: Create packages
+        run: make packages
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: packages-linux-${{ matrix.arch }}
+          path: |
+            *.tar.gz
+            *.deb
+            *.rpm
+            *.sha256
+          if-no-files-found: error
+
+  test-packages:
+    name: Test ${{ matrix.format }} on ${{ matrix.arch }}
+    needs: [package-linux]
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { arch: amd64, runner: ubuntu-24.04,     format: deb, image: 'debian:trixie' }
+          - { arch: amd64, runner: ubuntu-24.04,     format: rpm, image: 'fedora:43' }
+          - { arch: arm64, runner: ubuntu-24.04-arm, format: deb, image: 'debian:trixie' }
+          - { arch: arm64, runner: ubuntu-24.04-arm, format: rpm, image: 'fedora:43' }
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: packages-linux-${{ matrix.arch }}
+      - name: Install in a clean container
+        run: |
+          set -eux
+          docker run --rm -v "$PWD:/pkg" -w /pkg '${{ matrix.image }}' sh -eux -c '
+            if [ "${{ matrix.format }}" = deb ]; then
+              apt-get update && apt-get install -y ./*.deb
+            else
+              dnf install -y ./*.rpm
+            fi
+            command -v feeze
+            command -v feeze_recorder
+            # Swing needs a display, so assert only that the preflight checks in
+            # bin/feeze pass - that covers the JDK 25 and libgc dependencies.
+            feeze >/tmp/out 2>&1 || true
+            ! grep -qE "not found in .PATH|must be at least 25|libgc.so not installed" /tmp/out
+          '
+
+  release:
+    name: Publish release
+    if: github.ref_type == 'tag'
+    needs: [facts, test-packages]
+    runs-on: ubuntu-24.04
     permissions:
       contents: write
     steps:
-      - name: Check out repository
-        uses: actions/checkout@v6
-
-      - name: Install nfpm
-        run: |
-          # Asset names carry the version (nfpm_2.47.0_Linux_x86_64.tar.gz), so
-          # /latest/download/<name> gives a 404 — ask the API for the real URL.
-          # The API repeats the same asset in several fields, hence head -n1.
-          URL=$(curl -s https://api.github.com/repos/goreleaser/nfpm/releases/latest | grep -o 'https://[^"]*_Linux_x86_64\.tar\.gz' | head -n1)
-          echo "nfpm URL=[$URL]"
-          curl -fL -o /tmp/nfpm.tar.gz "$URL"
-          sudo tar zxf /tmp/nfpm.tar.gz -C /usr/local/bin nfpm
-          nfpm --version
-
-      - name: Download and unpack the release tarball
-        run: |
-          TAG="${{ github.event.inputs.release_tag }}"
-          echo "TAG=[$TAG]"
-          # Ask the API for the asset URL instead of constructing it by hand.
-          URL=$(curl -s "https://api.github.com/repos/tokiwa-software/feeze/releases/tags/$TAG" | grep -o 'https://[^"]*\.tar\.gz' | head -n1)
-          echo "URL=[$URL]"
-          test -n "$URL" || { echo "no asset found for tag $TAG"; exit 1; }
-          curl -fL -o release.tar.gz "$URL"
-          tar zxf release.tar.gz
-          ls -la
-
-      - name: Build .deb and .rpm
-        run: |
-          sudo apt-get install -y gettext-base   # provides envsubst
-          TAG="${{ github.event.inputs.release_tag }}"
-          VERSION="$(echo "$TAG" | cut -d_ -f2)"
-          echo "VERSION=[$VERSION]"
-          ./packaging/build-packages.sh "$VERSION" "$TAG"
-
-      - name: Build slim tar.gz
-        run: |
-          TAG="${{ github.event.inputs.release_tag }}"
-          VERSION="$(echo "$TAG" | cut -d_ -f2)"
-          OUT="feeze_${VERSION}_amd64"
-          # Same contents as the packages: no libbpf/ or libbpf_obj/, which are
-          # build artifacts and make up ~75% of the upstream tarball.
-          mkdir -p "$OUT"
-          cp -r "$TAG/bin" "$TAG/classes" "$TAG/icon.svg" "$OUT/"
-          tar czf "dist/$OUT.tar.gz" "$OUT"
-          ls -la dist/
-
-      - name: Attach packages to the release
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          gh release upload "${{ github.event.inputs.release_tag }}" dist/*.deb dist/*.rpm dist/*.tar.gz --clobber
-          gh release view "${{ github.event.inputs.release_tag }}" --json assets --jq '.assets[].name'
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: packages-linux-*
+          merge-multiple: true
+          path: artifacts
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: artifacts/*
+          draft: true
+          generate_release_notes: true
