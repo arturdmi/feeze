@@ -1,0 +1,11 @@
+Package: @NAME@
+Version: @VERSION@
+Architecture: @ARCH@
+Maintainer: @MAINTAINER@
+Installed-Size: @SIZE@
+Depends: default-jre (>= 11) | openjdk-11-jre | openjdk-17-jre
+Section: utils
+Priority: optional
+Homepage: @HOMEPAGE@
+Description: Feeze application
+ A desktop application built with Java.

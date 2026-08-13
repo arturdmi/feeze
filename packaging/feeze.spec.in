@@ -1,0 +1,35 @@
+Name:           @NAME@
+Version:        @VERSION@
+Release:        @RELEASE@%{?dist}
+Summary:        @SUMMARY@
+
+License:        @LICENSE@
+URL:            @HOMEPAGE@
+
+
+AutoReqProv:    no
+
+Requires:       java-headless >= 11
+
+%description
+@SUMMARY@
+
+%install
+mkdir -p %{buildroot}
+cp -a %{pkgroot}/. %{buildroot}/
+
+%files
+/usr/bin/feeze
+/usr/bin/feeze_recorder
+/usr/share/feeze/
+/usr/share/applications/feeze.desktop
+/usr/share/icons/hicolor/scalable/apps/feeze.svg
+
+%post
+# Скрипт после установки (аналог postinst для deb)
+if [ -x "$(command -v update-desktop-database)" ]; then
+    update-desktop-database -q /usr/share/applications || true
+fi
+if [ -x "$(command -v gtk-update-icon-cache)" ]; then
+    gtk-update-icon-cache -q -t -f /usr/share/icons/hicolor || true
+fi

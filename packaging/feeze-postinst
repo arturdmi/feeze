@@ -1,0 +1,14 @@
+#!/bin/sh
+set -e
+
+# 1. Обновление кэша ярлыков рабочего стола (XDG Desktop Entry)
+if [ -x "$(command -v update-desktop-database)" ]; then
+    update-desktop-database -q /usr/share/applications || true
+fi
+
+# 2. Обновление кэша системных иконок
+if [ -x "$(command -v gtk-update-icon-cache)" ]; then
+    gtk-update-icon-cache -q -t -f /usr/share/icons/hicolor || true
+fi
+
+exit 0

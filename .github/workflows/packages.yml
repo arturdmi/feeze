@@ -1,4 +1,4 @@
-name: Build feeze
+name: Build feeze packages
 
 on:
   push:

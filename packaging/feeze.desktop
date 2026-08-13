@@ -1,0 +1,9 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=Feeze
+Comment=Feeze Application
+Exec=feeze
+Icon=feeze
+Terminal=false
+Categories=Utility;Development;
