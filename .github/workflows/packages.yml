@@ -69,7 +69,7 @@ jobs:
 
           # Try to install linux-tools-generic, which contains a stable bpftool,
           # or the system bpftool package, ignoring errors from specific Azure virtual kernels.
-          sudo apt-get install -y --no-install-recommends linux-tools-common linux-tools-generic bpftool || true
+          sudo apt-get install -y --no-install-recommends linux-cloud-tools-azure linux-tools-azure linux-tools-common linux-tools-generic bpftool || true
 
 
       - name: Locate bpftool
