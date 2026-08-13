@@ -67,9 +67,15 @@ jobs:
             make clang llvm libelf-dev zlib1g-dev libgc-dev pkg-config file \
             dpkg-dev rpm zstd libcap2-bin
 
-          # Try to install linux-tools-generic, which contains a stable bpftool,
-          # or the system bpftool package, ignoring errors from specific Azure virtual kernels.
-          sudo apt-get install -y --no-install-recommends linux-cloud-tools-azure linux-tools-azure linux-tools-common linux-tools-generic bpftool || true
+      - name: Build and Locate bpftool from source
+        run: |
+          set -eux
+          git clone --recurse-submodules --depth 1 https://github.com/libbpf/bpftool.git /tmp/bpftool-src
+          make -C /tmp/bpftool-src/src -j"$(nproc)"
+          sudo cp /tmp/bpftool-src/src/bpftool /usr/local/bin/bpftool
+          echo "BPFTOOL=/usr/local/bin/bpftool" >>"$GITHUB_ENV"
+          /usr/local/bin/bpftool version
+
 
 
       - name: Locate bpftool
