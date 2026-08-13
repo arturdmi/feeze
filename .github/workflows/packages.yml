@@ -183,6 +183,9 @@ jobs:
             # Swing needs a display, so assert only that the preflight checks in
             # bin/feeze pass - that covers the JDK 25 and libgc dependencies.
             feeze >/tmp/out 2>&1 || true
+            echo "----- feeze output -----"; cat /tmp/out; echo "------------------------"
+            rpm -q java-25-openjdk gc elfutils-libelf zlib || true
+            java -version 2>&1 || echo "java not on PATH"
             ! grep -qE "not found in .PATH|must be at least 25|libgc.so not installed" /tmp/out
           '
 
