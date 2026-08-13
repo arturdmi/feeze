@@ -28,6 +28,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 package dev.feeze;
 
 import java.awt.Color;
+import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.FontMetrics;
@@ -1719,61 +1720,61 @@ class SchedulingPanorama extends Panorama
   }
 
   /**
-   * Component to draw scala as top ruler.
+   * Component with a dragging area
    */
-  public class Scala extends JComponent
+  public abstract class WithDraggingArea extends JComponent
   {
-
     /**
-     * Are we currently dragging, i.e., changing the height of this component?
+     * Cursor to use when mouse is over drag area
      */
-    boolean _dragging = false;
-
-    /**
-     * During _dragging, the last y position of the mouse that was processed to
-     * change the height.
-     */
-    int _dragY = 0;
-
-    int _preferredHeight;
-
-    /**
-     * Minimun height of Scale area, used to make sure it does not
-     * accidentally disappear when dragging.
-     */
-    int MIN_SCALA_HEIGHT() { return (int) (4*gapEighth()); }
+    abstract Cursor dragCursor();
 
     /**
      * Drag area is the area where you can grab the line and move it around.
      */
-    int dragAreaWidth        () { return (int) (16*gapEighth()); }
-    int dragAreaHeight       () { return (int) (4*gapEighth()); }
-    int dragAreaX            () { return (int) (getVisibleRect().x + getVisibleRect().width  - 24*gapEighth()); }
-    int dragAreaY            () { return (int) (getVisibleRect().y + getVisibleRect().height - dragAreaHeight()); }
+    abstract int dragAreaWidth        ();
+    abstract int dragAreaHeight       ();
+    abstract int dragAreaX            ();
+    abstract int dragAreaY            ();
 
 
     /**
-     * Are the given relative (to Scala) coordinates within the drag
+     * Are the given relative (to ThreadNames) coordinates within the drag
      * button?
      */
     boolean inDragArea(int x, int y)
     {
+      var ex = x;
+      var ey = y;
       return
-        dragAreaX() <= x && x < dragAreaX() + dragAreaWidth() &&
-        dragAreaY() <= y && y < dragAreaY() + dragAreaHeight();
+        dragAreaX() <= ex && ex < dragAreaX() + dragAreaWidth() &&
+        dragAreaY() <= ey && ey < dragAreaY() + dragAreaHeight();
     }
 
+    private boolean _inDragArea = false;
 
-    public Scala()
+
+    /**
+     * Are we currently dragging, i.e., changing the width of this component?
+     */
+    boolean _dragging = false;
+
+    /**
+     * During _dragging, the last x/y position of the mouse that was processed to
+     * change the width.
+     */
+    int _dragX = 0;
+    int _dragY = 0;
+
     {
-      setPreferredSize(new Dimension(1, _zoom.STANDARD_FONT_SIZE*7/8*5+16));
+      setPreferredSize(new Dimension(1, 1));
       addMouseListener(new MouseListener()
         {
 
           @Override
           public void mouseReleased(MouseEvent e)
           {
-            if (e.getComponent() == Scala.this &&
+            if (e.getComponent() == WithDraggingArea.this &&
                 SwingUtilities.isLeftMouseButton(e))
               {
                 _dragging = false;
@@ -1798,13 +1799,14 @@ class SchedulingPanorama extends Panorama
           @Override
           public void mousePressed(MouseEvent e)
           {
-            if (e.getComponent() == Scala.this &&
+            if (e.getComponent() == WithDraggingArea.this &&
                 SwingUtilities.isLeftMouseButton(e))
               {
                 var x = e.getX();
                 var y = e.getY();
                 if (inDragArea(x, y))
                   {
+                    _dragX = x;
                     _dragY = y;
                     _dragging = true;
                   }
@@ -1818,31 +1820,84 @@ class SchedulingPanorama extends Panorama
           @Override
           public void mouseMoved(MouseEvent e)
           {
+            if (e.getComponent() == WithDraggingArea.this)
+              {
+                var x = e.getX();
+                var y = e.getY();
+                var inDragArea = inDragArea(x,y);
+                if (inDragArea != _inDragArea)
+                  {
+                    _inDragArea = inDragArea;
+                    setCursor(inDragArea ? dragCursor()
+                                         : Cursor.getDefaultCursor());
+                  }
+              }
           }
 
           @Override
           public void mouseDragged(MouseEvent e)
           {
-            if (e.getComponent() == Scala.this &&
+            if (e.getComponent() == WithDraggingArea.this &&
                 SwingUtilities.isLeftMouseButton(e) &&
                 _dragging)
               {
+                var dx = e.getX() - _dragX;
                 var dy = e.getY() - _dragY;
-                if (dy != 0)
+                if (dx != 0 || dy != 0)
                   {
+                    if (dx > 0)
+                      {
+                        dx = Math.min(dx, SchedulingPanorama.this.getVisibleRect().width - MIN_PANORAMA_WIDTH());
+                      }
                     if (dy > 0)
                       {
                         dy = Math.min(dy, SchedulingPanorama.this.getVisibleRect().height - MIN_PANORAMA_HEIGHT());
                       }
-                    changeHeight(dy);
+                    _dragX += dx;
                     _dragY += dy;
+                    _leftRuler.changeWidth( dx);
+                    _topRuler .changeHeight(dy);
                   }
               }
           }
 
         });
+
     }
 
+  }
+
+
+  /**
+   * Component to draw scala as top ruler.
+   */
+  public class Scala extends WithDraggingArea
+  {
+
+    int _preferredHeight;
+
+    /**
+     * Minimun height of Scale area, used to make sure it does not
+     * accidentally disappear when dragging.
+     */
+    int MIN_SCALA_HEIGHT() { return (int) (4*gapEighth()); }
+
+    /**
+     * Cursor to use when mouse is over drag area
+     */
+    Cursor dragCursor() { return Cursor.getPredefinedCursor(Cursor.N_RESIZE_CURSOR); };
+
+    /**
+     * Drag area is the area where you can grab the line and move it around.
+     */
+    int dragAreaWidth        () { return (int) (16*gapEighth()); }
+    int dragAreaHeight       () { return (int) (4*gapEighth()); }
+    int dragAreaX            () { return (int) (getVisibleRect().x + getVisibleRect().width  - 24*gapEighth()); }
+    int dragAreaY            () { return (int) (getVisibleRect().y + getVisibleRect().height - dragAreaHeight()); }
+
+    {
+      setPreferredSize(new Dimension(1, _zoom.STANDARD_FONT_SIZE*7/8*5+16));
+    }
 
     void changeHeight(int dy)
     {
@@ -1889,27 +1944,19 @@ class SchedulingPanorama extends Panorama
   /**
    * Component to draw thread names as left ruler.
    */
-  public class ThreadNames extends JComponent
+  public class ThreadNames extends WithDraggingArea
   {
-
-    /**
-     * Are we currently dragging, i.e., changing the width of this component?
-     */
-    boolean _dragging = false;
-
-    /**
-     * During _dragging, the last x position of the mouse that was processed to
-     * change the width.
-     */
-    int _dragX = 0;
-
-    int _preferredWidth;
 
     /**
      * Minimun width of ThreadNames area, used to make sure it does not
      * accidentally disappear when dragging.
      */
     int MIN_THREADNAMES_WIDTH() { return (int) (4*gapEighth()); }
+
+    /**
+     * Cursor to use when mouse is over drag area
+     */
+    Cursor dragCursor() { return Cursor.getPredefinedCursor(Cursor.E_RESIZE_CURSOR); };
 
     /**
      * Drag area is the area where you can grab the line and move it around.
@@ -1919,137 +1966,8 @@ class SchedulingPanorama extends Panorama
     int dragAreaX            () { return (int) (getVisibleRect().x + getVisibleRect().width  - dragAreaWidth()); }
     int dragAreaY            () { return (int) (getVisibleRect().y + getVisibleRect().height - 24*gapEighth() ); }
 
-
-    /**
-     * Are the given relative (to ThreadNames) coordinates within the drag
-     * button?
-     */
-    boolean inDragArea(int x, int y)
     {
-      return
-        dragAreaX() <= x && x < dragAreaX() + dragAreaWidth() &&
-        dragAreaY() <= y && y < dragAreaY() + dragAreaHeight();
-    }
-
-
-    /**
-     * Constructor
-     */
-    public ThreadNames()
-    {
-      _preferredWidth  = _zoom.STANDARD_FONT_SIZE*10;
-      setPreferredSize(new Dimension(_preferredWidth, 1));
-      addMouseListener(new MouseListener()
-        {
-
-          @Override
-          public void mouseReleased(MouseEvent e)
-          {
-            if (e.getComponent() == ThreadNames.this &&
-                SwingUtilities.isLeftMouseButton(e))
-              {
-                _dragging = false;
-              }
-          }
-
-          @Override
-          public void mouseClicked(MouseEvent e)
-          {
-            var x = e.getX();
-            var y = e.getY();
-            var c = e.getComponent();
-            if (x >= 0 && x < c.getWidth() &&
-                y >= 0 && y < c.getHeight() &&
-                !inDragArea(x, y))
-              {
-                if (y >= cpusY() && y < cpusYHeaderBottom())
-                  {
-                    synchronized (SchedulingPanorama.this)
-                      {
-                        _cpusEnabled = !_cpusEnabled;
-                        _threads = null;
-                      }
-                    c.repaint();
-                    SchedulingPanorama.this.repaint();
-                  }
-                else
-                  {
-                    var ti = threadAt(y);
-                    var u = thread(ti).user();
-                    if (ti >= 0 &&
-                        ti <= numThreads()      &&
-                        isFirstThreadOfUser(ti) &&
-                        y >= threadYUserTop(ti) &&
-                        y < threadYUserBot(ti)     )
-                      {
-                        synchronized (SchedulingPanorama.this)
-                          {
-                            _usersEnabled[u._num] = !_usersEnabled[u._num];
-                            _threads = null;
-                          }
-                        c.repaint();
-                        SchedulingPanorama.this.repaint();
-                      }
-                  }
-              }
-          }
-
-          @Override
-          public void mouseEntered(MouseEvent e)
-          {
-          }
-
-          @Override
-          public void mouseExited(MouseEvent e)
-          {
-          }
-
-          @Override
-          public void mousePressed(MouseEvent e)
-          {
-            if (e.getComponent() == ThreadNames.this &&
-                SwingUtilities.isLeftMouseButton(e))
-              {
-                var x = e.getX();
-                var y = e.getY();
-                if (inDragArea(x, y))
-                  {
-                    _dragX = x;
-                    _dragging = true;
-                  }
-              }
-          }
-
-        });
-      addMouseMotionListener(new MouseMotionListener()
-        {
-
-          @Override
-          public void mouseMoved(MouseEvent e)
-          {
-          }
-
-          @Override
-          public void mouseDragged(MouseEvent e)
-          {
-            if (e.getComponent() == ThreadNames.this &&
-                SwingUtilities.isLeftMouseButton(e) &&
-                _dragging)
-              {
-                var dx = e.getX() - _dragX;
-                if (dx != 0)
-                  {
-                    if (dx > 0)
-                      {
-                        dx = Math.min(dx, SchedulingPanorama.this.getVisibleRect().width - MIN_PANORAMA_WIDTH());
-                      }
-                    changeWidth(dx);
-                    _dragX += dx;
-                  }
-              }
-          }
-
-        });
+      setPreferredSize(new Dimension(_zoom.STANDARD_FONT_SIZE*10, 1));
     }
 
     void changeWidth(int dx)
@@ -2218,22 +2136,21 @@ class SchedulingPanorama extends Panorama
   /**
    * top left corner
    */
-  JComponent _topLeft = new JComponent()
+  JComponent _topLeft = new TopLeft();
+
+
+  @Override
+  public JComponent topLeft()
   {
-    JComponent me = this;
+    return _topLeft;
+  }
 
-    /**
-     * Are we currently dragging, i.e., changing the width of this component?
-     */
-    boolean _dragging = false;
 
-    /**
-     * During _dragging, the last x/y position of the mouse that was processed to
-     * change the width.
-     */
-    int _dragX = 0;
-    int _dragY = 0;
-
+  /**
+   * Component to draw top left area
+   */
+  class TopLeft extends WithDraggingArea
+  {
 
     /**
      * Minimun width of topLeft area, used to make sure it does not accidentally
@@ -2247,6 +2164,10 @@ class SchedulingPanorama extends Panorama
      */
     int MIN_HEIGHT() { return (int) (8*gapEighth()); }
 
+    /**
+     * Cursor to use when mouse is over drag area
+     */
+    Cursor dragCursor() { return Cursor.getPredefinedCursor(Cursor.NW_RESIZE_CURSOR); };
 
     /**
      * Drag area is the area where you can grab the line and move it around.
@@ -2256,106 +2177,6 @@ class SchedulingPanorama extends Panorama
     int dragAreaX            () { return (int) (getWidth()  - dragAreaWidth() ); }
     int dragAreaY            () { return (int) (getHeight() - dragAreaHeight()); }
 
-
-    /**
-     * Are the given relative (to ThreadNames) coordinates within the drag
-     * button?
-     */
-    boolean inDragArea(int x, int y)
-    {
-      var ex = x;
-      var ey = y;
-      return
-        dragAreaX() <= ex && ex < dragAreaX() + dragAreaWidth() &&
-        dragAreaY() <= ey && ey < dragAreaY() + dragAreaHeight();
-    }
-
-
-    {
-      setPreferredSize(new Dimension(1, 1));
-      addMouseListener(new MouseListener()
-        {
-
-          @Override
-          public void mouseReleased(MouseEvent e)
-          {
-            if (e.getComponent() == me &&
-                SwingUtilities.isLeftMouseButton(e))
-              {
-                _dragging = false;
-              }
-          }
-
-          @Override
-          public void mouseClicked(MouseEvent e)
-          {
-          }
-
-          @Override
-          public void mouseEntered(MouseEvent e)
-          {
-          }
-
-          @Override
-          public void mouseExited(MouseEvent e)
-          {
-          }
-
-          @Override
-          public void mousePressed(MouseEvent e)
-          {
-            if (e.getComponent() == me &&
-                SwingUtilities.isLeftMouseButton(e))
-              {
-                var x = e.getX();
-                var y = e.getY();
-                if (inDragArea(x, y))
-                  {
-                    _dragX = x;
-                    _dragY = y;
-                    _dragging = true;
-                  }
-              }
-          }
-
-        });
-      addMouseMotionListener(new MouseMotionListener()
-        {
-
-          @Override
-          public void mouseMoved(MouseEvent e)
-          {
-          }
-
-          @Override
-          public void mouseDragged(MouseEvent e)
-          {
-            if (e.getComponent() == me &&
-                SwingUtilities.isLeftMouseButton(e) &&
-                _dragging)
-              {
-                var dx = e.getX() - _dragX;
-                var dy = e.getY() - _dragY;
-                if (dx != 0 || dy != 0)
-                  {
-                    if (dx > 0)
-                      {
-                        dx = Math.min(dx, SchedulingPanorama.this.getVisibleRect().width - MIN_PANORAMA_WIDTH());
-                      }
-                    if (dy > 0)
-                      {
-                        dy = Math.min(dy, SchedulingPanorama.this.getVisibleRect().height - MIN_PANORAMA_HEIGHT());
-                      }
-                    _dragX += dx;
-                    _dragY += dy;
-                    _leftRuler.changeWidth( dx);
-                    _topRuler .changeHeight(dy);
-                  }
-              }
-          }
-
-        });
-    }
 
     protected void paintComponent(Graphics g)
     {
@@ -2392,13 +2213,6 @@ class SchedulingPanorama extends Panorama
                      (int) (dragAreaX()+dragAreaWidth()-1-2*gapEighth()), (int) (dragAreaY()+dragAreaHeight()-1-2*gapEighth()));
     }
   };
-
-
-  @Override
-  public JComponent topLeft()
-  {
-    return _topLeft;
-  }
 
 
   /*---------------------------------------------------------------------*/
