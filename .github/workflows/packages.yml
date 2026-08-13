@@ -2,7 +2,7 @@ name: Build feeze
 
 on:
   push:
-    branches: [main]
+    branches: [arch-packages]
     tags: ['v*']
   pull_request:
   workflow_dispatch:
