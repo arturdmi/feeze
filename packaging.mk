@@ -49,8 +49,7 @@ pkg-check-arch:
 # are located together at the same level.
 # -----------------------------------------------------------------------
 .PHONY: pkg-stage
-pkg-stage: pkg-check-arch
-	$(PKG_BINARIES) $(FEEZE_REPO)/packaging/feeze.desktop
+pkg-stage: pkg-check-arch $(PKG_BINARIES) $(FEEZE_REPO)/packaging/feeze.desktop
 	rm -rf $(PKG_ROOT)
 	mkdir -p $(PKG_SHARE)/bin
 
@@ -95,7 +94,6 @@ pkg-tar: pkg-stage
 # -----------------------------------------------------------------------
 .PHONY: pkg-deb
 pkg-deb: pkg-stage
-
 	rm -rf $(PKG_DIR)/deb $(PKG_DEB_FILE)
 	mkdir -p $(PKG_DIR)/deb/DEBIAN
 	cp -a $(PKG_ROOT)/. $(PKG_DIR)/deb/
