@@ -27,6 +27,8 @@ jobs:
       - id: f
         run: |
           set -eu
+          # If this is a tag launch, the version is taken from the tag name,
+          # otherwise the version is taken from the version.txt file, and the type becomes nightly.
           if [ "$GITHUB_REF_TYPE" = "tag" ]; then
             echo "version=${GITHUB_REF_NAME#v}" >>"$GITHUB_OUTPUT"
             echo "release-kind=release"         >>"$GITHUB_OUTPUT"
@@ -36,10 +38,9 @@ jobs:
           fi
 
   # ---------------------------------------------------------------------------
-  # One native runner per architecture. Cross-building is not possible: `fz -c`
-  # drives clang with host settings and links a host-architecture
-  # libfuzion_rt.so. All packaging logic lives in packaging.mk; this job only
-  # provides the toolchain and calls make.
+  # One native runner per architecture.
+  # All packaging logic lives in packaging.mk;
+  # this job only provides the toolchain and calls make.
   # ---------------------------------------------------------------------------
   package-linux:
     name: Package for Linux (${{ matrix.arch }})
@@ -150,7 +151,6 @@ jobs:
             *.tar.gz
             *.deb
             *.rpm
-            *.sha256
           if-no-files-found: error
 
   test-packages:

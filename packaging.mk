@@ -5,7 +5,7 @@ PKG_HOMEPAGE   := https://github.com/tokiwa-software/feeze
 PKG_LICENSE    := AGPL-3.0-only
 PKG_SUMMARY    := Interactive graphical thread and scheduling analysis tool using eBPF
 
-PKG_VERSION := $(shell sed -E 's/[-]?dev$$/~dev/' $(FEEZE_REPO)/version.txt)
+PKG_VERSION := $(shell cat $(FEEZE_REPO)/version.txt)
 PKG_FULLVERSION := $(PKG_VERSION)-$(PKG_RELEASE)
 
 UNAME_M  := $(shell uname -m)
@@ -83,7 +83,6 @@ pkg-tar: pkg-stage
 	mkdir -p $(PKG_DIR)/$(PKG_TARDIR)
 	cp -a $(PKG_SHARE)/. $(PKG_DIR)/$(PKG_TARDIR)/
 	tar czf $(PKG_TARDIR).tar.gz -C $(PKG_DIR) $(PKG_TARDIR)
-	sha256sum $(PKG_TARDIR).tar.gz >$(PKG_TARDIR).tar.gz.sha256
 	@echo " + $(PKG_TARDIR).tar.gz"
 
 # -----------------------------------------------------------------------
@@ -111,7 +110,6 @@ pkg-deb: pkg-stage
 	    >$(PKG_DIR)/deb/DEBIAN/postinst
 	chmod 755 $(PKG_DIR)/deb/DEBIAN/postinst
 	dpkg-deb --root-owner-group -Zzstd --build $(PKG_DIR)/deb $(PKG_DEB_FILE)
-	sha256sum $(PKG_DEB_FILE) >$(PKG_DEB_FILE).sha256
 	@echo " + $(PKG_DEB_FILE)"
 
 # -----------------------------------------------------------------------
@@ -139,7 +137,6 @@ pkg-rpm: pkg-stage
 	for f in $(PKG_DIR)/rpm/RPMS/$(RPM_ARCH)/*.rpm; do        \
 	  cp "$$f" . ;                                            \
 	  b=$$(basename "$$f") ;                                  \
-	  sha256sum "$$b" >"$$b.sha256" ;                         \
 	  echo " + $$b" ;                                         \
 	done
 
