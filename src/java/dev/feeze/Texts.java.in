@@ -49,6 +49,10 @@ public class Texts extends ANY
 
   static String tooltiptext(String html)
   {
+    if (html.startsWith("--") || html.endsWith("--"))
+      {
+        System.err.println("*** warning: tooltip extraction failed for "+html);
+      }
     return
       """
       <html>
@@ -67,8 +71,28 @@ public class Texts extends ANY
   /*----------------------------  constants  ----------------------------*/
 
 
+  static String FUZION_HOME_TOOLTIP = tooltiptext("""
+--FUZION_HOME_TOOLTIP--
+                                                           """);
+
+  static String SHARED_MEM_NAME_TOOLTIP = tooltiptext("""
+--SHARED_MEM_TOOLTIP--
+                                                           """);
+
+  static String SHARED_MEM_SIZE_TOOLTIP = tooltiptext("""
+--SHARED_MEM_TOOLTIP--
+                                                           """);
+
   static String START_LOCAL_RECORDER_TOOLTIP = tooltiptext("""
 --START_LOCAL_RECORDER_TOOLTIP--
+                                                           """);
+
+  static String RECORD_TOOLTIP = tooltiptext("""
+--RECORDING_SCHEDULING_DATA_TOOLTIP--
+                                                           """);
+
+  static String SHOW_TOOLTIP = tooltiptext("""
+--DISPLAYING_RECORDED_DATA_TOOLTIP--
                                                            """);
 
 

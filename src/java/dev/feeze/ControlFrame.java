@@ -172,28 +172,16 @@ public class ControlFrame extends JFrame
         _usedMemBar.setValue(0);
         _usedMemBar.setStringPainted(true);
 
-        _startRecorder = button("start local recorder", KeyEvent.VK_S,
-                                true ? Texts.START_LOCAL_RECORDER_TOOLTIP :
-                                ("<html>"+
-                                "<h1>Start Local Recorder</h1>"+
-                                "<p>This is required before data can be recorded.</p>"+
-                                "<p>The <code>feeze_recorder</code> application will be started.</p>"+
-                                "<p>This requires superuser status, a window asking to enter sudo password may open</p>"+
-                                 "</html>"));
-        _record = button("record", KeyEvent.VK_R,
-                         "<html>"+
-                         "<h1>Start / Stop Recording</h1>"+
-                         "<p>Once the local recorder is running, this button can be used to start recording scheduler data.</p>"+
-                         "<p>Hitting this again will stop the current recording. </p>"+
-                         "</html>");
-        _record.setEnabled(false);
-        _showData = button("show data", KeyEvent.VK_D,
-                           "<html>"+
-                           "<h1>Show Recorded Data</h1>"+
-                           "<p>Once data has been recorderded, even partial data, this button will open a Scheduling Data Frame and display the recored data.</p>"+
-                           "<p>You can open several data frames for the same underlying data.</p>"+
-                           "<p>You can also open a frame while recording is still ongoing.  Then, only the data recorded so far will be shown.</p>"+
-                           "</html>");
+        _startRecorder = button("start local recorder", KeyEvent.VK_S, null);
+        _record        = button("record"              , KeyEvent.VK_R, null); _record.setEnabled(false);
+        _showData      = button("show data"           , KeyEvent.VK_D, null);
+
+        _fuzionHomeDir.setToolTipText(Texts.FUZION_HOME_TOOLTIP);
+        _sharedMemName.setToolTipText(Texts.SHARED_MEM_NAME_TOOLTIP);
+        _sharedMemSize.setToolTipText(Texts.SHARED_MEM_SIZE_TOOLTIP);
+        _startRecorder.setToolTipText(Texts.START_LOCAL_RECORDER_TOOLTIP);
+        _record       .setToolTipText(Texts.RECORD_TOOLTIP);
+        _showData     .setToolTipText(Texts.SHOW_TOOLTIP);
 
         if (!Feeze.sharedMemExists(_sharedMemName.getText()))
           {
