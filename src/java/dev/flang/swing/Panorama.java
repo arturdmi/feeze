@@ -190,6 +190,13 @@ public abstract class Panorama extends JPanel
   protected JViewport _viewport;
 
 
+  /**
+   * While moving the data area around, used to indicate that we should not
+   * change the cursor when hovering.
+   */
+  protected boolean _draggingDataArea = false;
+
+
   /*--------------------------  constructors  ---------------------------*/
 
 
