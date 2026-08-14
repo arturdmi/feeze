@@ -10,7 +10,6 @@ PKG_FULLVERSION := $(PKG_VERSION)-$(PKG_RELEASE)
 
 UNAME_M  := $(shell uname -m)
 RPM_ARCH := $(UNAME_M)
-# file(1) spells the machine differently than uname -m does.
 FILE_ARCH := $(shell echo $(UNAME_M) | sed -e s/x86_64/x86-64/ -e s/aarch64/ARM\ aarch64/)
 DEB_ARCH := $(shell dpkg --print-architecture 2>/dev/null || \
                     echo $(UNAME_M) | sed -e s/x86_64/amd64/ -e s/aarch64/arm64/)
@@ -19,7 +18,8 @@ PKG_DIR   := $(BUILD_DIR)/pkg
 PKG_ROOT  := $(PKG_DIR)/root
 PKG_PREFIX := /usr/share/feeze
 PKG_SHARE := $(PKG_ROOT)$(PKG_PREFIX)
-PKG_TARDIR:= $(PKG_NAME)_$(PKG_VERSION)_linux_$(DEB_ARCH)
+PKG_TARDIR:= $(PKG_NAME)_$(PKG_VERSION)_$(DEB_ARCH)
+PKG_DEB_FILE := $(PKG_NAME)_$(PKG_VERSION)-$(PKG_RELEASE)_$(DEB_ARCH).deb
 
 PKG_BINARIES := $(BUILD_DIR)/bin/feeze          \
                 $(BUILD_DIR)/bin/feeze_desktop  \
@@ -29,34 +29,38 @@ PKG_BINARIES := $(BUILD_DIR)/bin/feeze          \
 packages: pkg-tar pkg-deb pkg-rpm
 
 # -----------------------------------------------------------------------
-# Sanity check: refuse to package a tree that was not built natively. Catches
-# the classic "amd64 binary inside an arm64 package" mistake early.
+# Sanity check: refuse to package a tree that was not built natively.
+# Catches "amd64 binary inside an arm64 package" mistake early.
 # -----------------------------------------------------------------------
 .PHONY: pkg-check-arch
-pkg-check-arch: $(BUILD_DIR)/bin/$(FZ_MAIN)
+pkg-check-arch:
+	$(BUILD_DIR)/bin/$(FZ_MAIN)
 	@file $(BUILD_DIR)/bin/$(FZ_MAIN) | grep -q "$(FILE_ARCH)" || { \
 	  echo "*** error: $(BUILD_DIR)/bin/$(FZ_MAIN) is not a $(FILE_ARCH) binary." >&2; \
-	  echo "    packages must be built natively, see comment in packaging.mk"  >&2; \
+	  echo "    packages must be built natively, see packaging.mk"  >&2; \
 	  file $(BUILD_DIR)/bin/$(FZ_MAIN) >&2; \
 	  exit 1; }
 
 # -----------------------------------------------------------------------
 # Staging area.
 #
-# bin/feeze derives FEEZE_HOME from `readlink -f "$$0"`/.., and starts the JVM
-# with `-p "$$FEEZE_HOME" -m ...`, so bin/, classes/ and feeze.jmod have to
-# stay siblings. Everything therefore lives under /usr/share/feeze and /usr/bin
-# only holds relative symlinks into that tree.
+# The code collects all Java application files into a single isolated folder usr/share/feeze,
+# since it is critical for the JVM to start that binaries, classes and jmod modules
+# are located together at the same level.
 # -----------------------------------------------------------------------
 .PHONY: pkg-stage
-pkg-stage: pkg-check-arch $(PKG_BINARIES) $(FEEZE_REPO)/packaging/feeze.desktop
+pkg-stage: pkg-check-arch
+	$(PKG_BINARIES) $(FEEZE_REPO)/packaging/feeze.desktop
 	rm -rf $(PKG_ROOT)
 	mkdir -p $(PKG_SHARE)/bin
+
 	install -m 755 $(BUILD_DIR)/bin/feeze         $(PKG_SHARE)/bin/feeze
 	install -m 755 $(BUILD_DIR)/bin/feeze_desktop $(PKG_SHARE)/bin/feeze_desktop
 	install -m 755 $(BUILD_DIR)/bin/$(FZ_MAIN)    $(PKG_SHARE)/bin/$(FZ_MAIN)
 	ln -sf $(FZ_MAIN) $(PKG_SHARE)/bin/$(RECORDER_BIN)
+
 	install -m 755 $(FEEZE_REPO)/packaging/feeze-postinst $(PKG_SHARE)/bin/feeze-postinst
+
 	cp -a $(BUILD_CLASSES) $(PKG_SHARE)/classes
 	install -m 644 $(BUILD_DIR)/feeze.jmod $(PKG_SHARE)/feeze.jmod
 	install -m 644 $(BUILD_DIR)/icon.svg   $(PKG_SHARE)/icon.svg
@@ -71,11 +75,12 @@ pkg-stage: pkg-check-arch $(PKG_BINARIES) $(FEEZE_REPO)/packaging/feeze.desktop
 	mkdir -p $(PKG_ROOT)/usr/share/icons/hicolor/scalable/apps
 	install -m 644 $(FEEZE_REPO)/assets/logo.svg \
 	               $(PKG_ROOT)/usr/share/icons/hicolor/scalable/apps/feeze.svg
-	@echo " + staged $(PKG_ROOT)"
+	@echo " + Staged $(PKG_ROOT)"
 
 # -----------------------------------------------------------------------
-# tar.gz — unpacked tree is self-contained, FEEZE_HOME resolves relative to
-# the extracted bin/feeze, so it runs from anywhere without installation.
+# Portable tar.gz build.
+# Creates a self-contained archive that runs instantly from any directory
+# without requiring system installation.
 # -----------------------------------------------------------------------
 .PHONY: pkg-tar
 pkg-tar: pkg-stage
@@ -83,22 +88,21 @@ pkg-tar: pkg-stage
 	mkdir -p $(PKG_DIR)/$(PKG_TARDIR)
 	cp -a $(PKG_SHARE)/. $(PKG_DIR)/$(PKG_TARDIR)/
 	tar czf $(PKG_TARDIR).tar.gz -C $(PKG_DIR) $(PKG_TARDIR)
-	@echo " + $(PKG_TARDIR).tar.gz"
+	@echo " + Created portable archive: $(PKG_TARDIR).tar.gz"
 
 # -----------------------------------------------------------------------
-# deb — built with plain dpkg-deb rather than debhelper on purpose: no
-# Build-Depends resolution, so it also works on runners where openjdk-25 is
-# not an apt package.
+# Debian package build (.deb) using raw dpkg-deb.
 # -----------------------------------------------------------------------
-PKG_DEB_FILE := $(PKG_NAME)_$(PKG_VERSION)-$(PKG_RELEASE)_$(DEB_ARCH).deb
-
 .PHONY: pkg-deb
 pkg-deb: pkg-stage
+
 	rm -rf $(PKG_DIR)/deb $(PKG_DEB_FILE)
 	mkdir -p $(PKG_DIR)/deb/DEBIAN
 	cp -a $(PKG_ROOT)/. $(PKG_DIR)/deb/
+
 	mkdir -p $(PKG_DIR)/deb/usr/share/doc/$(PKG_NAME)
 	install -m 644 $(FEEZE_REPO)/LICENSE $(PKG_DIR)/deb/usr/share/doc/$(PKG_NAME)/copyright
+
 	sed -e 's|@NAME@|$(PKG_NAME)|g'                                  \
 	    -e 's|@VERSION@|$(PKG_FULLVERSION)|g'             \
 	    -e 's|@ARCH@|$(DEB_ARCH)|g'                                  \
@@ -121,6 +125,7 @@ pkg-deb: pkg-stage
 pkg-rpm: pkg-stage
 	rm -rf $(PKG_DIR)/rpm
 	mkdir -p $(PKG_DIR)/rpm/SPECS $(PKG_DIR)/rpm/BUILD $(PKG_DIR)/rpm/RPMS $(PKG_DIR)/rpm/SOURCES
+
 	sed -e 's|@NAME@|$(PKG_NAME)|g'             \
 	    -e 's|@VERSION@|$(PKG_VERSION)|g'       \
 	    -e 's|@RELEASE@|$(PKG_RELEASE)|g'       \
@@ -129,11 +134,13 @@ pkg-rpm: pkg-stage
 	    -e 's|@HOMEPAGE@|$(PKG_HOMEPAGE)|g'     \
 		-e 's|@PREFIX@|$(PKG_PREFIX)|g'         \
 	    $(FEEZE_REPO)/packaging/feeze.spec.in >$(PKG_DIR)/rpm/SPECS/$(PKG_NAME).spec
+
 	rpmbuild -bb                                              \
 	  --define "_topdir $(abspath $(PKG_DIR)/rpm)"            \
 	  --define "pkgroot $(abspath $(PKG_ROOT))"               \
 	  --target $(RPM_ARCH)                                    \
 	  $(PKG_DIR)/rpm/SPECS/$(PKG_NAME).spec
+
 	for f in $(PKG_DIR)/rpm/RPMS/$(RPM_ARCH)/*.rpm; do                          \
 	  b=$$(basename "$$f" | sed 's/\.$(RPM_ARCH)\.rpm$$/.$(DEB_ARCH).rpm/') ;   \
 	  cp "$$f" "./$$b" ;                                                        \

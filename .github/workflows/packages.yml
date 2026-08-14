@@ -232,7 +232,7 @@ jobs:
             echo "latest=false"          >>"$GITHUB_OUTPUT"
           fi
 
-      - uses: softprops/action-gh-release@v2
+      - uses: softprops/action-gh-release@v3
         with:
           tag_name: ${{ steps.tag.outputs.name }}
           name: ${{ steps.tag.outputs.name == 'nightly' && format('nightly {0} ({1})', needs.facts.outputs.version, github.sha) || steps.tag.outputs.name }}
