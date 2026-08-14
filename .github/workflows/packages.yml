@@ -124,6 +124,13 @@ jobs:
       - name: Export FUZION_HOME
         run: echo "FUZION_HOME=$GITHUB_WORKSPACE/.fuzion-home" >>"$GITHUB_ENV"
 
+      - name: Verify Fuzion toolchain
+        run: |
+          set -eu
+          file "$FUZION_HOME/lib/libfuzion_rt.so" | grep -q '${{ matrix.elf_arch }}' || {
+            echo "::error::cached Fuzion toolchain is not ${{ matrix.elf_arch }}"; exit 1; }
+          "$FUZION_HOME/bin/fz" -version
+
       # Temporary: drop once the arch-parametrised Makefile is merged.
       - name: Patch Makefile for multi-arch
         run: |
