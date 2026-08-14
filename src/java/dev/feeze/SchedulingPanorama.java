@@ -1751,6 +1751,15 @@ class SchedulingPanorama extends Panorama
         dragAreaY() <= ey && ey < dragAreaY() + dragAreaHeight();
     }
 
+
+    /**
+     * mouseClicked action, to be redefined if needed.
+     */
+    void mouseClicked(MouseEvent e)
+    {
+    }
+
+
     private boolean _inDragArea = false;
 
 
@@ -1784,6 +1793,7 @@ class SchedulingPanorama extends Panorama
           @Override
           public void mouseClicked(MouseEvent e)
           {
+            WithDraggingArea.this.mouseClicked(e);
           }
 
           @Override
@@ -1974,6 +1984,48 @@ class SchedulingPanorama extends Panorama
 
     {
       setPreferredSize(new Dimension(_zoom.STANDARD_FONT_SIZE*10, 1));
+    }
+
+    @Override
+    void mouseClicked(MouseEvent e)
+    {
+      var x = e.getX();
+      var y = e.getY();
+      var c = e.getComponent();
+      if (x >= 0 && x < c.getWidth() &&
+          y >= 0 && y < c.getHeight() &&
+          !inDragArea(x, y))
+        {
+          if (y >= cpusY() && y < cpusYHeaderBottom())
+            {
+              synchronized (SchedulingPanorama.this)
+                {
+                  _cpusEnabled = !_cpusEnabled;
+                  _threads = null;
+                }
+              c.repaint();
+              SchedulingPanorama.this.repaint();
+            }
+          else
+            {
+              var ti = threadAt(y);
+              var u = thread(ti).user();
+              if (ti >= 0 &&
+                  ti <= numThreads()      &&
+                  isFirstThreadOfUser(ti) &&
+                  y >= threadYUserTop(ti) &&
+                  y < threadYUserBot(ti)     )
+                {
+                  synchronized (SchedulingPanorama.this)
+                    {
+                      _usersEnabled[u._num] = !_usersEnabled[u._num];
+                      _threads = null;
+                    }
+                  c.repaint();
+                  SchedulingPanorama.this.repaint();
+                }
+            }
+        }
     }
 
     void changeWidth(int dx)
