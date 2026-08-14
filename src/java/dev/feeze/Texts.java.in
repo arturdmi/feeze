@@ -53,6 +53,8 @@ public class Texts extends ANY
       {
         System.err.println("*** warning: tooltip extraction failed for "+html);
       }
+
+    // NYI: BUG: Tooltip width is hard-coded at 380px here. I did not manage to do something more dynamic like `80em` or `40%`.
     return
       """
       <html>
