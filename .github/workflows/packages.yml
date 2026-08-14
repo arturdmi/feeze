@@ -74,14 +74,10 @@ jobs:
           BPFTOOL_VERSION: v7.5.0
         run: |
           set -eux
-          # Release assets are named by Go-style arch, which matches matrix.arch
-          # directly: bpftool-v7.5.0-amd64.tar.gz / -arm64.tar.gz
           url="https://github.com/libbpf/bpftool/releases/download/${BPFTOOL_VERSION}/bpftool-${BPFTOOL_VERSION}-${{ matrix.arch }}.tar.gz"
           curl -fsSL -o /tmp/bpftool.tar.gz "$url"
           tar xzf /tmp/bpftool.tar.gz -C /tmp
           sudo install -m 755 /tmp/bpftool /usr/local/bin/bpftool
-          # The Makefile honours BPFTOOL (BPFTOOL ?= /usr/sbin/bpftool) and
-          # checks the path with `test -f`, so exporting it is enough.
           echo "BPFTOOL=/usr/local/bin/bpftool" >>"$GITHUB_ENV"
           /usr/local/bin/bpftool version
 
@@ -198,7 +194,9 @@ jobs:
 
   release:
     name: Publish release
-    if: github.ref_type == 'tag'
+    # Everything except pull requests: forks do not get contents:write and the
+    # upload would fail with 403.
+    if: github.event_name != 'pull_request'
     needs: [facts, test-packages]
     runs-on: ubuntu-24.04
     permissions:
@@ -209,8 +207,37 @@ jobs:
           pattern: packages-linux-*
           merge-multiple: true
           path: artifacts
+
+      - name: Refuse to publish a partial set
+        run: |
+          set -eu
+          for p in '*_amd64.deb' '*_arm64.deb' '*.amd64.rpm' '*.arm64.rpm' \
+                   '*_linux_amd64.tar.gz' '*_linux_arm64.tar.gz'; do
+            ls artifacts/$p >/dev/null 2>&1 \
+              || { echo "::error::missing artifact matching $p"; exit 1; }
+          done
+
+      - id: tag
+        run: |
+          set -eu
+          if [ "$GITHUB_REF_TYPE" = tag ]; then
+            echo "name=$GITHUB_REF_NAME" >>"$GITHUB_OUTPUT"
+            echo "pre=false"             >>"$GITHUB_OUTPUT"
+            echo "latest=true"           >>"$GITHUB_OUTPUT"
+          else
+            # A single moving tag: the release is replaced on every push instead
+            # of accumulating one entry per commit.
+            echo "name=nightly"          >>"$GITHUB_OUTPUT"
+            echo "pre=true"              >>"$GITHUB_OUTPUT"
+            echo "latest=false"          >>"$GITHUB_OUTPUT"
+          fi
+
       - uses: softprops/action-gh-release@v2
         with:
+          tag_name: ${{ steps.tag.outputs.name }}
+          name: ${{ steps.tag.outputs.name == 'nightly' && format('nightly {0} ({1})', needs.facts.outputs.version, github.sha) || steps.tag.outputs.name }}
+          prerelease: ${{ steps.tag.outputs.pre }}
+          make_latest: ${{ steps.tag.outputs.latest }}
           files: artifacts/*
-          draft: true
+          draft: false
           generate_release_notes: true
