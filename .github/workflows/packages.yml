@@ -139,10 +139,13 @@ jobs:
             sed -i "s#sed 's/x86_64/x86/'#sed -e 's/x86_64/x86/' -e 's/aarch64/arm64/'#" Makefile
           fi
 
-      # Build only what is shipped: `make all` also runs the pandoc manual
-      # rules, which write back into web/content/ and dirty the working tree.
+      # Build only what is shipped: `make all` also runs the pandoc manual rules
       - name: Build
-        run: make -j"$(nproc)" build/bin/feeze build/bin/feeze_desktop build/bin/feeze_recorder
+        run: make -j"$(nproc)" \
+            build/bin/feeze \
+            build/bin/feeze_desktop \
+            build/bin/feeze_recorder \
+            build/bin/feeze_recorder_c
 
       - name: Create packages
         run: make packages
@@ -211,8 +214,8 @@ jobs:
       - name: Refuse to publish a partial set
         run: |
           set -eu
-          for p in '*_amd64.deb' '*_arm64.deb' '*.amd64.rpm' '*.arm64.rpm' \
-                   '*_amd64.tar.gz' '*_arm64.tar.gz'; do
+          for p in '*-amd64.deb' '*-arm64.deb' '*-amd64.rpm' '*-arm64.rpm' \
+                   '*-amd64.tar.gz' '*-arm64.tar.gz'; do
             ls artifacts/$p >/dev/null 2>&1 \
               || { echo "::error::missing artifact matching $p"; exit 1; }
           done

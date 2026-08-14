@@ -18,11 +18,14 @@ PKG_DIR   := $(BUILD_DIR)/pkg
 PKG_ROOT  := $(PKG_DIR)/root
 PKG_PREFIX := /usr/share/feeze
 PKG_SHARE := $(PKG_ROOT)$(PKG_PREFIX)
-PKG_TARDIR:= $(PKG_NAME)_$(PKG_VERSION)_$(DEB_ARCH)
-PKG_DEB_FILE := $(PKG_NAME)_$(PKG_VERSION)-$(PKG_RELEASE)_$(DEB_ARCH).deb
+PKG_TARDIR   := $(PKG_NAME)-$(PKG_VERSION)-$(DEB_ARCH)
+PKG_DEB_FILE := $(PKG_NAME)-$(PKG_VERSION)-$(DEB_ARCH).deb
+PKG_RPM_FILE := $(PKG_NAME)-$(PKG_VERSION)-$(DEB_ARCH).rpm
+
 
 PKG_BINARIES := $(BUILD_DIR)/bin/feeze          \
                 $(BUILD_DIR)/bin/feeze_desktop  \
+                $(BUILD_DIR)/bin/$(C_MAIN)      \
                 $(BUILD_DIR)/bin/$(RECORDER_BIN)
 
 .PHONY: packages
@@ -33,13 +36,14 @@ packages: pkg-tar pkg-deb pkg-rpm
 # Catches "amd64 binary inside an arm64 package" mistake early.
 # -----------------------------------------------------------------------
 .PHONY: pkg-check-arch
-pkg-check-arch:
-	$(BUILD_DIR)/bin/$(FZ_MAIN)
-	@file $(BUILD_DIR)/bin/$(FZ_MAIN) | grep -q "$(FILE_ARCH)" || { \
-	  echo "*** error: $(BUILD_DIR)/bin/$(FZ_MAIN) is not a $(FILE_ARCH) binary." >&2; \
-	  echo "    packages must be built natively, see packaging.mk"  >&2; \
-	  file $(BUILD_DIR)/bin/$(FZ_MAIN) >&2; \
-	  exit 1; }
+pkg-check-arch: $(BUILD_DIR)/bin/$(FZ_MAIN) $(BUILD_DIR)/bin/$(C_MAIN)
+	@for b in $(BUILD_DIR)/bin/$(FZ_MAIN) $(BUILD_DIR)/bin/$(C_MAIN); do \
+	  file "$$b" | grep -q "$(FILE_ARCH)" || { \
+	    echo "*** error: $$b is not a $(FILE_ARCH) binary." >&2; \
+	    echo "    packages must be built natively, see packaging.mk"  >&2; \
+	    file "$$b" >&2; \
+	    exit 1; }; \
+	done
 
 # -----------------------------------------------------------------------
 # Staging area.
@@ -56,6 +60,7 @@ pkg-stage: pkg-check-arch $(PKG_BINARIES) $(FEEZE_REPO)/packaging/feeze.desktop
 	install -m 755 $(BUILD_DIR)/bin/feeze         $(PKG_SHARE)/bin/feeze
 	install -m 755 $(BUILD_DIR)/bin/feeze_desktop $(PKG_SHARE)/bin/feeze_desktop
 	install -m 755 $(BUILD_DIR)/bin/$(FZ_MAIN)    $(PKG_SHARE)/bin/$(FZ_MAIN)
+	install -m 755 $(BUILD_DIR)/bin/$(C_MAIN)     $(PKG_SHARE)/bin/$(C_MAIN)
 	ln -sf $(FZ_MAIN) $(PKG_SHARE)/bin/$(RECORDER_BIN)
 
 	install -m 755 $(FEEZE_REPO)/packaging/feeze-postinst $(PKG_SHARE)/bin/feeze-postinst
@@ -68,6 +73,7 @@ pkg-stage: pkg-check-arch $(PKG_BINARIES) $(FEEZE_REPO)/packaging/feeze.desktop
 	mkdir -p $(PKG_ROOT)/usr/bin
 	ln -sf ../share/feeze/bin/feeze              $(PKG_ROOT)/usr/bin/feeze
 	ln -sf ../share/feeze/bin/$(RECORDER_BIN)    $(PKG_ROOT)/usr/bin/$(RECORDER_BIN)
+	ln -sf ../share/feeze/bin/$(C_MAIN)          $(PKG_ROOT)/usr/bin/$(C_MAIN)
 	mkdir -p $(PKG_ROOT)/usr/share/applications
 	install -m 644 $(FEEZE_REPO)/packaging/feeze.desktop \
 	               $(PKG_ROOT)/usr/share/applications/feeze.desktop
@@ -139,13 +145,16 @@ pkg-rpm: pkg-stage
 	  --target $(RPM_ARCH)                                    \
 	  $(PKG_DIR)/rpm/SPECS/$(PKG_NAME).spec
 
-	for f in $(PKG_DIR)/rpm/RPMS/$(RPM_ARCH)/*.rpm; do                          \
-	  b=$$(basename "$$f" | sed 's/\.$(RPM_ARCH)\.rpm$$/.$(DEB_ARCH).rpm/') ;   \
-	  cp "$$f" "./$$b" ;                                                        \
-	  echo " + $$b" ;                                                           \
-	done
+	# rpmbuild names the file by the canonical arch (x86_64/aarch64); rename it
+	# to the unified scheme. The architecture recorded inside the package is
+	# unaffected and must stay canonical, or dnf refuses to install it.
+	rm -f $(PKG_RPM_FILE)
+	cp $(PKG_DIR)/rpm/RPMS/$(RPM_ARCH)/$(PKG_NAME)-$(PKG_VERSION)-$(PKG_RELEASE).$(RPM_ARCH).rpm \
+	   ./$(PKG_RPM_FILE)
+	@echo " + $(PKG_RPM_FILE)"
 
 .PHONY: pkg-clean
 pkg-clean:
 	rm -rf $(PKG_DIR)
-	rm -f $(PKG_NAME)_*.tar.gz $(PKG_NAME)_*.deb $(PKG_NAME)-*.rpm *.sha256
+	rm -f $(PKG_NAME)-*.tar.gz $(PKG_NAME)-*.deb $(PKG_NAME)-*.rpm \
+	      $(PKG_NAME)_*.tar.gz $(PKG_NAME)_*.deb *.sha256

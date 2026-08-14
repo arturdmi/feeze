@@ -9,12 +9,16 @@ REC=/usr/share/feeze/bin/feeze_recorder_fz
 # pinning maps needs CAP_SYS_RESOURCE on older kernels. Granting them here
 # avoids running the whole GUI as root. Failure is not fatal: the recorder
 # still works under sudo.
-if command -v setcap >/dev/null 2>&1 && [ -f "$REC" ]; then
-  setcap cap_bpf,cap_perfmon,cap_sys_resource+ep "$REC" 2>/dev/null \
-    || echo "feeze: could not set capabilities on $REC, run feeze_recorder as root" >&2
-else
-  echo "feeze: setcap unavailable, run feeze_recorder as root" >&2
-fi
+for REC in /usr/share/feeze/bin/feeze_recorder_fz \
+           /usr/share/feeze/bin/feeze_recorder_c; do
+  [ -f "$REC" ] || continue
+  if command -v setcap >/dev/null 2>&1; then
+    setcap cap_bpf,cap_perfmon,cap_sys_resource+ep "$REC" 2>/dev/null \
+      || echo "feeze: could not set capabilities on $REC, run it as root" >&2
+  else
+    echo "feeze: setcap unavailable, run the recorder as root" >&2
+  fi
+done
 
 if command -v update-desktop-database >/dev/null 2>&1; then
   update-desktop-database -q /usr/share/applications || true
