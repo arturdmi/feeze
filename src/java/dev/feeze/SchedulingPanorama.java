@@ -1835,11 +1835,11 @@ class SchedulingPanorama extends Panorama
                 var x = e.getX();
                 var y = e.getY();
                 var inResizeButton = inResizeButton(x,y);
-                if (inResizeButton != _inResizeButton)
+                if (inResizeButton != _inResizeButton && !_draggingDataArea)
                   {
                     _inResizeButton = inResizeButton;
                     setCursor(inResizeButton ? resizeCursor()
-                                         : Cursor.getDefaultCursor());
+                                             : Cursor.getDefaultCursor());
                   }
               }
           }

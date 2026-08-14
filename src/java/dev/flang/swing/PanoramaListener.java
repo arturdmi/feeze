@@ -30,6 +30,7 @@ package dev.flang.swing;
 /*---------------------------------------------------------------------*/
 
 import java.awt.Component;
+import java.awt.Cursor;
 import java.awt.KeyEventDispatcher;
 import java.awt.KeyboardFocusManager;
 import java.awt.Point;
@@ -203,6 +204,14 @@ class PanoramaListener
       {
         ar.endRepeat();
       }
+
+    if ((SwingUtilities.isLeftMouseButton  (e) ||
+         SwingUtilities.isMiddleMouseButton(e)    ) &&
+        c ==  _p)
+      {
+        _p.setCursor(Cursor.getDefaultCursor());
+        _p._draggingDataArea = false;
+      }
   }
 
 
@@ -362,6 +371,7 @@ class PanoramaListener
    *
    * @param e the mouse event.
    */
+  @Override
   public void mouseDragged(MouseEvent e)
   {
     var ar = _autorepeat;
@@ -373,6 +383,8 @@ class PanoramaListener
               {
                 if (e.getComponent() ==  _p)
                   {
+                    _p.setCursor(Cursor.getPredefinedCursor(Cursor.MOVE_CURSOR));
+                    _p._draggingDataArea = true;
                     if (_dragX > 0) /* repeat thread sets this to -1 to disable dragging */
                       { /* stop auto-repeat */
                         ar._activeComponent = null;
