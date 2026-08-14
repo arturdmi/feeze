@@ -57,7 +57,9 @@ ARCH := $(shell uname -m | sed 's/x86_64/x86/')
 
 BPFTOOL ?= /usr/sbin/bpftool
 
-JAVA_SOURCES := $(shell find $(FEEZE_SRC_JAVA) -name "*.java")
+FEEZE_GENERATED_TEXTS_JAVA = $(BUILD_DIR)/generated/java/dev/feeze/Texts.java
+GENERATED_JAVA_SOURCES := $(FEEZE_GENERATED_TEXTS_JAVA)
+JAVA_SOURCES := $(shell find $(FEEZE_SRC_JAVA) -name "*.java") $(GENERATED_JAVA_SOURCES)
 JAVA_MAIN := Feeze
 JAVA_MAIN_CLASSFILE := dev/feeze/$(JAVA_MAIN).class
 JAVA_MAIN_CLASS     := dev.feeze.$(JAVA_MAIN)
@@ -180,6 +182,11 @@ $(BUILD_DIR)/manual/readme.html: README.md
 	pandoc -f markdown -t html $^ >$@
 	diff $@ web/content/doc/pages/readme.html >/dev/null || cp $@ web/content/doc/pages/readme.html
 	cp -rf doc/images $(@D)
+
+$(FEEZE_GENERATED_TEXTS_JAVA): $(FEEZE_SRC_JAVA)/dev/feeze/Texts.java.in $(BUILD_DIR)/manual/index.html
+	mkdir -p $(@D)
+	grep -Pzo '<h. id="starting-the-feeze-recorder">[\s\S]*?(?=<h3)' $(BUILD_DIR)/manual/index.html >test.txt
+	cat $< | sed -e "s~--START_LOCAL_RECORDER_TOOLTIP--~cat test.txt~e" >$@
 
 # run the GUI. NYI: to be replaced by fuzion implementation, make taret run_control
 run: $(BUILD_DIR)/bin/feeze $(BUILD_DIR)/bin/feeze_desktop $(BUILD_DIR)/bin/$(RECORDER_BIN)
