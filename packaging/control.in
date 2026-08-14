@@ -1,0 +1,12 @@
+Package: @NAME@
+Version: @VERSION@
+Architecture: @ARCH@
+Maintainer: @MAINTAINER@
+Installed-Size: @SIZE@
+Depends: openjdk-25-jre, libgc1, libelf1, zlib1g, bpftool
+Requires: java-25-openjdk gc, elfutils-libelf, zlib1g, bpftool
+Section: utils
+Priority: optional
+Homepage: @HOMEPAGE@
+Description: Feeze application
+ A desktop application built with Java.

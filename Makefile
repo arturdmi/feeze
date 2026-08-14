@@ -219,6 +219,10 @@ clean:
 	rm -rf $(BUILD_DIR)
 	find . -name "*~" -exec rm {} \;
 
+# distribution packages (tar.gz, deb, rpm)
+#
+include $(FEEZE_REPO)/packaging.mk
+
 .PHONY: release
 release: clean all
 	rm -f feeze_$(VERSION_AND_PLATFORM).tar.gz
