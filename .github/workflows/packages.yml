@@ -141,7 +141,8 @@ jobs:
 
       # Build only what is shipped: `make all` also runs the pandoc manual rules
       - name: Build
-        run: make -j"$(nproc)" \
+        run: |
+            make -j"$(nproc)" \
             build/bin/feeze \
             build/bin/feeze_desktop \
             build/bin/feeze_recorder \
