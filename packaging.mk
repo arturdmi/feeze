@@ -134,10 +134,10 @@ pkg-rpm: pkg-stage
 	  --define "pkgroot $(abspath $(PKG_ROOT))"               \
 	  --target $(RPM_ARCH)                                    \
 	  $(PKG_DIR)/rpm/SPECS/$(PKG_NAME).spec
-	for f in $(PKG_DIR)/rpm/RPMS/$(RPM_ARCH)/*.rpm; do        \
-	  cp "$$f" . ;                                            \
-	  b=$$(basename "$$f") ;                                  \
-	  echo " + $$b" ;                                         \
+	for f in $(PKG_DIR)/rpm/RPMS/$(RPM_ARCH)/*.rpm; do                          \
+	  b=$$(basename "$$f" | sed 's/\.$(RPM_ARCH)\.rpm$$/.$(DEB_ARCH).rpm/') ;   \
+	  cp "$$f" "./$$b" ;                                                        \
+	  echo " + $$b" ;                                                           \
 	done
 
 .PHONY: pkg-clean
