@@ -53,7 +53,7 @@ jobs:
         run: |
           set -eu
           # If this is a tag launch, the version is taken from the tag name,
-          # otherwise the version is taken from the version.txt file, and the type becomes nightly.
+          # otherwise from version.txt and the build is treated as a snapshot.
           if [ "$GITHUB_REF_TYPE" = "tag" ]; then
             echo "version=${GITHUB_REF_NAME#v}" >>"$GITHUB_OUTPUT"
             echo "release-kind=release"         >>"$GITHUB_OUTPUT"
@@ -92,25 +92,27 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends \
             make clang llvm libelf-dev zlib1g-dev libgc-dev pkg-config file \
-            systemtap-sdt-dev binutils bpftool \
+            systemtap-sdt-dev \
             dpkg-dev rpm zstd libcap2-bin
 
-          # Build-time only: bpftool generates the BPF skeleton header and is
-          # not a runtime dependency of the packages.
-          #
-          # The Makefile defaults to /usr/sbin/bpftool, which on Ubuntu is a
-          # wrapper dispatching to linux-tools-$(uname -r). No such package
-          # exists for the runner's Azure kernel, so pick the real binary and
-          # verify it actually runs before relying on it.
-          for c in /usr/bin/bpftool /usr/sbin/bpftool; do
-            if [ -x "$c" ] && "$c" version >/dev/null 2>&1; then
-              echo "BPFTOOL=$c" >>"$GITHUB_ENV"
-              "$c" version
-              exit 0
-            fi
-          done
-          echo "::error::no working bpftool found"
-          exit 1
+      - name: Ensure bpftool works on current kernel
+      # taken from https://github.com/actions/runner-images/issues/14203
+        shell: bash
+        run: |
+          set -euo pipefail
+          KREL="$(uname -r)"
+          if ! /usr/sbin/bpftool -V >/dev/null 2>&1; then
+             printf "\033[1;35m*** using workaround for bpftool ***\033[0m\n"
+             if ! find /usr/lib -type f -name bpftool -perm -111 2>/dev/null | grep -q .; then
+               sudo apt-get update
+               sudo apt-get install -y --no-install-recommends linux-tools-generic
+             fi
+             FALLBACK="$(find /usr/lib -type f -name bpftool -perm -111 2>/dev/null | sort -V | tail -n 1)"
+             [[ -n "$FALLBACK" ]] || { echo "No bpftool payload found"; exit 1; }
+             sudo mkdir -p "/usr/lib/linux-tools/${KREL}"
+             sudo ln -sf "$FALLBACK" "/usr/lib/linux-tools/${KREL}/bpftool"
+          fi
+          /usr/sbin/bpftool -V
 
 
       - uses: actions/setup-java@v5
