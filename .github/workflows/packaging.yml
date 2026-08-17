@@ -24,6 +24,7 @@
 #
 #
 # -----------------------------------------------------------------------
+
 name: Build feeze packages
 
 on:
@@ -86,16 +87,7 @@ jobs:
         with:
           submodules: recursive
 
-      - name: Install build and packaging dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install openjdk-25-jdk-headless libgc1 libgc-dev
-          sudo apt-get install libelf-dev
-          sudo apt-get install linux-tools-`uname -r`
-          sudo apt-get install pandoc
-
-          echo "JAVA_HOME=/usr/lib/jvm/java-25-openjdk-amd64" >> $GITHUB_ENV
-          echo "/usr/lib/jvm/java-25-openjdk-amd64/bin" >> $GITHUB_PATH
+      - uses: ./.github/actions/install-deps
 
       - name: Ensure bpftool works on current kernel
       # taken from https://github.com/actions/runner-images/issues/14203
