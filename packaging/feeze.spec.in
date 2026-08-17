@@ -23,7 +23,6 @@
 #
 #
 # -----------------------------------------------------------------------
-# Generated from packaging/feeze.spec.in by packaging.mk - do not edit build/.
 #
 # Nothing is compiled here: %install only copies the tree that packaging.mk
 # already staged, handed over via --define "pkgroot ...".

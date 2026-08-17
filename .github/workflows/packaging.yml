@@ -223,7 +223,7 @@ jobs:
           else
             # A single moving tag: the release is replaced on every push instead
             # of accumulating one entry per commit.
-            echo "name=nightly"          >>"$GITHUB_OUTPUT"
+            echo "name=snapshot"          >>"$GITHUB_OUTPUT"
             echo "pre=true"              >>"$GITHUB_OUTPUT"
             echo "latest=false"          >>"$GITHUB_OUTPUT"
           fi
