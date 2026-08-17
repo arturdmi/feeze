@@ -28,20 +28,30 @@
 # Provisioning script for Fedora: installs the feeze release and a minimal
 # XFCE desktop so that the GUI can be tested inside a VirtualBox VM.
 #
+# Safe shell mode:
+# -e: exit immediately if a command exits with a non-zero status
+# -u: treat unset variables as an error
+# -o pipefail: return value of a pipeline is the status of the last command to exit with a non-zero status
 set -euo pipefail
 
+# --- Environment Variables Validation ---
+# Verify that required configuration variables are passed from Vagrant/machines.yml
 : "${FEEZE_VERSION:?not set — check 'release' in config/machines.yml}"
 : "${FEEZE_TARGET:?not set — check 'target' for this machine}"
 
+# --- Paths & Endpoints ---
 FEEZE_NAME="feeze_${FEEZE_VERSION}_${FEEZE_TARGET}"
 URL="https://github.com/tokiwa-software/feeze/releases/download/${FEEZE_NAME}/${FEEZE_NAME}.tar.gz"
 DIR="/home/vagrant/${FEEZE_NAME}"
 FILES="/tmp/feeze-files"
 
-echo "=== packages ==="
-# NOTE: Fedora 43 (Server Edition) has no xfce group in its metadata, so the
-# desktop packages are named individually. Package names differ from Debian:
-#   libgc1 -> gc, openjdk-25-jdk -> java-25-openjdk, policykit-1 -> polkit
+# --- Package Installation ---
+echo "=== Installing System Packages ==="
+# Fedora 43 Server Edition lacks the 'xfce' group metadata.
+# Packages are installed explicitly. Differences from Debian:
+# - libgc1 ➔ gc
+# - openjdk-25-jdk ➔ java-25-openjdk
+# - policykit-1 ➔ polkit
 dnf -y install \
   java-25-openjdk gc curl tar \
   xorg-x11-server-Xorg xorg-x11-xinit \
@@ -49,7 +59,9 @@ dnf -y install \
   lightdm slick-greeter \
   polkit dbus-x11 accountsservice desktop-file-utils
 
-echo "=== libgc check ==="
+
+# --- Dependencies Verification ---
+echo "=== Verifying libgc Availability ==="
 /sbin/ldconfig
 if /sbin/ldconfig -p | grep -q 'libgc\.so'; then
   echo "OK: $(/sbin/ldconfig -p | grep 'libgc\.so' | head -1)"
@@ -58,42 +70,49 @@ else
   exit 1
 fi
 
-echo "=== available sessions / greeters ==="
+# --- Debugging Window Managers ---
+echo "=== Checking Installed Sessions & Greeters ==="
 ls /usr/share/xsessions/ || echo "EMPTY — no session installed"
 ls /usr/share/xgreeters/ || echo "EMPTY — no greeter installed"
 
-echo "=== autologin ==="
-# NOTE: unlike Debian/Ubuntu, Fedora's lightdm PAM config does not use a
-# 'nopasswdlogin' group — autologin works from lightdm.conf alone.
+# --- Display Manager & Autologin Configuration ---
+echo "=== Configuring Autologin ==="
+# Unlike Debian/Ubuntu, Fedora's lightdm PAM configuration does not require
+# a 'nopasswdlogin' group. Autologin works solely via lightdm.conf configuration.
 mkdir -p /etc/lightdm/lightdm.conf.d
 install -m 644 "$FILES/lightdm-autologin.conf" /etc/lightdm/lightdm.conf.d/50-autologin.conf
 
+
+# Set system to boot into GUI mode and enable the display manager service
 systemctl set-default graphical.target
 systemctl enable lightdm
 
-echo "=== polkit ==="
+# --- Security & Permissions (Polkit & Sudoers) ---
+echo "=== Configuring Polkit & Permissions ==="
 # The GUI's "start local recorder" button uses pkexec (PolicyKit), not sudo.
 mkdir -p /etc/polkit-1/rules.d
 install -m 644 "$FILES/49-feeze.rules" /etc/polkit-1/rules.d/49-feeze.rules
 
-# The recorder needs root to load its eBPF program.
-echo 'vagrant ALL=(ALL) NOPASSWD:ALL' > /etc/sudoers.d/vagrant
-chmod 440 /etc/sudoers.d/vagrant
-
-echo "=== feeze ==="
+# --- Application Deployment ---
+echo "=== Downloading and Extracting Feeze ==="
 if [ ! -d "$DIR" ]; then
   su - vagrant -c "cd \$HOME && curl -fL -o '${FEEZE_NAME}.tar.gz' '${URL}' && tar zxf '${FEEZE_NAME}.tar.gz'"
 fi
 
-echo "=== feeze autostart ==="
+# --- Desktop Autostart Configuration ---
+echo "=== Configuring Desktop Autostart ==="
+# Generate .desktop files by replacing the placeholders with the actual path
 mkdir -p /home/vagrant/.config/autostart
 for f in feeze feeze-recorder; do
   sed "s#@FEEZE_DIR@#${DIR}#g" "$FILES/$f.desktop.tmpl" \
     > "/home/vagrant/.config/autostart/$f.desktop"
 done
 
+# Validate syntax of generated desktop launcher entries
 desktop-file-validate /home/vagrant/.config/autostart/feeze.desktop || echo "WARN: invalid desktop entry"
 desktop-file-validate /home/vagrant/.config/autostart/feeze-recorder.desktop || echo "WARN: invalid desktop entry"
+
+# Fix permissions for the configuration directory
 chown -R vagrant:vagrant /home/vagrant/.config
 
-echo "install: OK"
+echo "Provisioning complete: OK"

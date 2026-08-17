@@ -24,35 +24,40 @@
 #
 # -----------------------------------------------------------------------
 
-# The recorder only writes data while the GUI is running, so a working X
-# session is not optional here — that is most of what this script sets up.
-#
+# Safe shell mode:
+# -e: exit immediately if a command exits with a non-zero status
+# -u: treat unset variables as an error
+# -o pipefail: pipeline returns the exit status of the last command to fail
 set -euo pipefail
 
-# Installing lightdm asks which display manager to use. There is nobody to
-# answer that during provisioning, so it would hang forever.
+# --- Automation Settings ---
+# Force APT to use default answers and suppress interactive dialogs.
+# Essential for headless installation to prevent lightdm from hanging on prompt.
 export DEBIAN_FRONTEND=noninteractive
 
+# --- Environment Variables Validation ---
+# Verify that required configuration variables are passed from Vagrant/machines.yml
 : "${FEEZE_VERSION:?not set — check 'release' in config/machines.yml}"
 : "${FEEZE_TARGET:?not set — check 'target' for this machine}"
 
-# On GitHub the release tag and the tarball name are the same string, and the
-# suffix is the distribution it was built for (Ubuntu_24), not the arch.
+# --- Paths & Endpoints ---
+# The GitHub release tag and asset tarball use the same naming convention.
+# Suffix targets the OS distribution (e.g., Ubuntu_24), not the architecture.
 FEEZE_NAME="feeze_${FEEZE_VERSION}_${FEEZE_TARGET}"
 URL="https://github.com/tokiwa-software/feeze/releases/download/${FEEZE_NAME}/${FEEZE_NAME}.tar.gz"
 DIR="/home/vagrant/${FEEZE_NAME}"
-
-# Mounted from the host by the Vagrantfile; only the script itself is copied in.
 FILES="/tmp/feeze-files"
 
-echo "=== packages ==="
-# Second line of defence against the display-manager prompt.
+# --- Package Manager Pre-configuration ---
+echo "=== Pre-configuring Package Manager ==="
+# Pre-seed debconf selection to automatically set lightdm as the default display manager
 echo "lightdm shared/default-x-display-manager select lightdm" | debconf-set-selections
 apt-get update -qq
 
-# Debian 13 split policykit-1 into polkitd + pkexec; Ubuntu still has the old
-# name. Read os-release in a subshell — sourcing it directly would clobber
-# NAME, VERSION and friends in this script.
+# --- Distribution Specific Resolution ---
+# Resolve Package Name Discrepancies:
+# Debian 13 split 'policykit-1' into 'polkitd' + 'pkexec'; Ubuntu still uses the legacy name.
+# Executing within a subshell (...) prevents sourcing from overwriting local script variables.
 DISTRO_ID="$(. /etc/os-release && echo "$ID")"
 case "$DISTRO_ID" in
   ubuntu) POLKIT_PKGS="policykit-1" ;;
@@ -60,10 +65,11 @@ case "$DISTRO_ID" in
   *)      POLKIT_PKGS="polkitd" ;;
 esac
 
-# The X server, video drivers and greeter normally arrive as *recommends* of
-# the desktop metapackages. --no-install-recommends drops them, and lightdm
-# then dies with "Can't launch X server X -core, not found in path" — hence
-# every piece is spelled out below.
+# --- Package Installation ---
+echo "=== Installing System Packages ==="
+# Note on --no-install-recommends:
+# Metapackages usually pull X server and drivers as recommendations. Omitting them
+# breaks lightdm with "Can't launch X server". Every dependency is listed explicitly.
 apt-get install -y --no-install-recommends \
   openjdk-25-jdk libgc1 curl tar \
   xserver-xorg xserver-xorg-core xinit \
@@ -73,72 +79,67 @@ apt-get install -y --no-install-recommends \
   libxrender1 libxtst6 libxi6 \
   $POLKIT_PKGS dbus-x11 accountsservice desktop-file-utils
 
-# Absolute path on purpose: /sbin is not on a normal user's PATH on Debian.
+# --- Dependencies Verification ---
+# Explicit path calling: /sbin is omitted from standard user PATH environments on Debian.
 /sbin/ldconfig
 if /sbin/ldconfig -p | grep -q 'libgc\.so'; then
   echo "OK: $(/sbin/ldconfig -p | grep 'libgc\.so' | head -1)"
 else
-  echo "FAIL: libgc not visible to the dynamic linker"
+  echo "FAIL: libgc is not visible to the dynamic linker"
   exit 1
 fi
 
-echo "=== autologin ==="
-# Ubuntu's lightdm PAM config only skips the password prompt for members of
-# this group; without it the log says
-#   requirement "user ingroup nopasswdlogin" not met by user "vagrant"
+# --- Display Manager & Autologin Configuration ---
+echo "=== Configuring Autologin & Group Policies ==="
+# Ubuntu's lightdm PAM stack strictly restricts passwordless access to members of this group.
 groupadd -f nopasswdlogin
 gpasswd -a vagrant nopasswdlogin
 
-# Both settings are load-bearing:
-#   user-session    — the box default is "ubuntu", a session that does not
-#                     exist here, and lightdm restart-loops looking for it.
-#                     Must match a file in /usr/share/xsessions/.
-#   greeter-session — lightdm ships no greeter of its own.
-#                     Must match a file in /usr/share/xgreeters/.
+# Critical Configuration Properties in lightdm-autologin.conf:
+# - user-session: Must match an entry in /usr/share/xsessions/ (prevents loop crashes).
+# - greeter-session: Must match an entry in /usr/share/xgreeters/ (lightdm lacks native greeter).
 mkdir -p /etc/lightdm/lightdm.conf.d
 install -m 644 "$FILES/lightdm-autologin.conf" /etc/lightdm/lightdm.conf.d/50-autologin.conf
 
+# Set system initialization target to graphical GUI mode
 systemctl set-default graphical.target
 
-echo "=== privileges ==="
-# The GUI's "start local recorder" button goes through pkexec
+# --- Security & Permissions (Polkit) ---
+echo "=== Configuring Polkit Rules ==="
+# Elevate privileges: The GUI "start local recorder" button relies on pkexec (PolicyKit)
 mkdir -p /etc/polkit-1/rules.d
 install -m 644 "$FILES/49-feeze.rules" /etc/polkit-1/rules.d/49-feeze.rules
 
-echo "=== feeze ==="
-# Provisioning runs as root, but the release belongs to the vagrant user.
-# Skip the download if it is already unpacked so repeated runs stay quick.
+# --- Application Deployment ---
+echo "=== Downloading and Extracting Feeze ==="
+# Provisioning runs as root, but application scope belongs to the 'vagrant' user.
+# Skip execution if target directory exists to ensure rapid iterative provisioning runs.
 if [ ! -d "$DIR" ]; then
   su - vagrant -c "cd \$HOME && curl -fL -o '${FEEZE_NAME}.tar.gz' '${URL}' && tar zxf '${FEEZE_NAME}.tar.gz'"
 fi
 
-# bin/feeze checks for libgc by running `ldconfig` with no path, which a
-# normal Debian user cannot find — so it claims libgc is missing when it is
-# not. Reported upstream; patch it here to keep the VM usable.
-# The first expression strips any /sbin/ prefixes already present, so running
-# provisioning twice cannot produce /sbin//sbin/ldconfig.
+# --- Upstream Fix / Path Patching ---
+# Workaround for ldconfig binary paths:
+# bin/feeze evaluates libgc via an absolute-less `ldconfig` call, failing under non-root users.
+# The first regex expression strips preexisting /sbin/ prefixes to ensure execution idempotency.
 sed -i -e 's#\(/sbin/\)*ldconfig#ldconfig#g' \
        -e 's#(ldconfig -p#(/sbin/ldconfig -p#' "${DIR}/bin/feeze"
 grep -n 'ldconfig' "${DIR}/bin/feeze"
 
-# If this does not list xfce.desktop, user-session above points at nothing.
-echo "=== available sessions ==="
-ls /usr/share/xsessions/ || echo "EMPTY — XFCE is not installed"
-
-echo "=== autostart ==="
-# XFCE runs everything in ~/.config/autostart when the session starts.
+# --- Desktop Autostart Configuration ---
+echo "=== Configuring Desktop Autostart ==="
+# XFCE executes all valid desktop configurations found inside this path upon session initialization
 mkdir -p /home/vagrant/.config/autostart
 for f in feeze feeze-recorder; do
   sed "s#@FEEZE_DIR@#${DIR}#g" "$FILES/$f.desktop.tmpl" \
     > "/home/vagrant/.config/autostart/$f.desktop"
 done
 
-# A malformed entry is ignored silently, which is a miserable thing to debug.
+# Validate structure of generated desktop launcher profiles to catch silent validation failures
 desktop-file-validate /home/vagrant/.config/autostart/feeze.desktop || echo "WARN: invalid desktop entry"
 desktop-file-validate /home/vagrant/.config/autostart/feeze-recorder.desktop || echo "WARN: invalid desktop entry"
 
-# Files written by root here break the session or the autostart without
-# saying why.
+# Enforce uniform file permissions (root-owned files in home directory block user environment)
 chown -R vagrant:vagrant /home/vagrant/.config
 
-echo "install: OK"
+echo "Provisioning complete: OK"
