@@ -59,7 +59,8 @@ jobs:
             echo "release-kind=release"         >>"$GITHUB_OUTPUT"
           else
             echo "version=$(cat version.txt)"   >>"$GITHUB_OUTPUT"
-            echo "release-kind=nightly"         >>"$GITHUB_OUTPUT"
+            # A single moving tag: the release is replaced on every push
+            echo "release-kind=snapshot"         >>"$GITHUB_OUTPUT"
           fi
 
   # ---------------------------------------------------------------------------
@@ -91,8 +92,25 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends \
             make clang llvm libelf-dev zlib1g-dev libgc-dev pkg-config file \
-            systemtap-sdt-dev \
+            systemtap-sdt-dev binutils bpftool \
             dpkg-dev rpm zstd libcap2-bin
+
+          # Build-time only: bpftool generates the BPF skeleton header and is
+          # not a runtime dependency of the packages.
+          #
+          # The Makefile defaults to /usr/sbin/bpftool, which on Ubuntu is a
+          # wrapper dispatching to linux-tools-$(uname -r). No such package
+          # exists for the runner's Azure kernel, so pick the real binary and
+          # verify it actually runs before relying on it.
+          for c in /usr/bin/bpftool /usr/sbin/bpftool; do
+            if [ -x "$c" ] && "$c" version >/dev/null 2>&1; then
+              echo "BPFTOOL=$c" >>"$GITHUB_ENV"
+              "$c" version
+              exit 0
+            fi
+          done
+          echo "::error::no working bpftool found"
+          exit 1
 
 
       - uses: actions/setup-java@v5
@@ -211,7 +229,7 @@ jobs:
       - uses: softprops/action-gh-release@v3
         with:
           tag_name: ${{ steps.tag.outputs.name }}
-          name: ${{ steps.tag.outputs.name == 'nightly' && format('nightly {0} ({1})', needs.facts.outputs.version, github.sha) || steps.tag.outputs.name }}
+          name: ${{ steps.tag.outputs.name == 'snapshot' && format('snapshot {0} ({1})', needs.facts.outputs.version, github.sha) || steps.tag.outputs.name }}
           prerelease: ${{ steps.tag.outputs.pre }}
           make_latest: ${{ steps.tag.outputs.latest }}
           files: artifacts/*
