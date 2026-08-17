@@ -1,8 +1,29 @@
 #!/usr/bin/env bash
+# This file is part of the Feeze scheduling analysis tool.
 #
-# Installs a feeze release tarball plus a minimal XFCE desktop into a Debian
-# or Ubuntu VM, so the GUI can be tested somewhere other than a dev machine.
+# This code is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License, version 3,
+# as published by the Free Software Foundation.
 #
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License, version 3,
+# along with this program.  If not, see <http://www.gnu.org/licenses/>
+
+
+# -----------------------------------------------------------------------
+#
+#  Copyright (c) 2025, Tokiwa Software GmbH, Germany
+#
+#  Source of install-debian.sh
+#
+#  Provisioning of a Debian or Ubuntu test machine
+#
+# -----------------------------------------------------------------------
+
 # The recorder only writes data while the GUI is running, so a working X
 # session is not optional here — that is most of what this script sets up.
 #
@@ -21,6 +42,7 @@ FEEZE_NAME="feeze_${FEEZE_VERSION}_${FEEZE_TARGET}"
 URL="https://github.com/tokiwa-software/feeze/releases/download/${FEEZE_NAME}/${FEEZE_NAME}.tar.gz"
 DIR="/home/vagrant/${FEEZE_NAME}"
 
+# Mounted from the host by the Vagrantfile; only the script itself is copied in.
 FILES="/tmp/feeze-files"
 
 echo "=== packages ==="
@@ -79,14 +101,9 @@ install -m 644 "$FILES/lightdm-autologin.conf" /etc/lightdm/lightdm.conf.d/50-au
 systemctl set-default graphical.target
 
 echo "=== privileges ==="
-# The GUI's "start local recorder" button goes through pkexec, not sudo, so
-# the sudoers drop-in below does not cover it.
+# The GUI's "start local recorder" button goes through pkexec
 mkdir -p /etc/polkit-1/rules.d
 install -m 644 "$FILES/49-feeze.rules" /etc/polkit-1/rules.d/49-feeze.rules
-
-# Loading the eBPF program needs root.
-echo 'vagrant ALL=(ALL) NOPASSWD:ALL' > /etc/sudoers.d/vagrant
-chmod 440 /etc/sudoers.d/vagrant
 
 echo "=== feeze ==="
 # Provisioning runs as root, but the release belongs to the vagrant user.
@@ -110,8 +127,6 @@ ls /usr/share/xsessions/ || echo "EMPTY — XFCE is not installed"
 
 echo "=== autostart ==="
 # XFCE runs everything in ~/.config/autostart when the session starts.
-# bash -lc gives a login shell with a sane PATH; wrapping these in
-# xfce4-terminal instead tends to die with exit 127 over quoting.
 mkdir -p /home/vagrant/.config/autostart
 for f in feeze feeze-recorder; do
   sed "s#@FEEZE_DIR@#${DIR}#g" "$FILES/$f.desktop.tmpl" \

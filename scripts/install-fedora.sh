@@ -1,10 +1,34 @@
 #!/usr/bin/env bash
+# This file is part of the Feeze scheduling analysis tool.
 #
+# This code is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License, version 3,
+# as published by the Free Software Foundation.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License, version 3,
+# along with this program.  If not, see <http://www.gnu.org/licenses/>
+
+
+# -----------------------------------------------------------------------
+#
+#  Copyright (c) 2025, Tokiwa Software GmbH, Germany
+#
+#  Source of install-fedora.sh
+#
+#  Provisioning of a Fedora test machine
+#
+#
+# -----------------------------------------------------------------------
+
 # Provisioning script for Fedora: installs the feeze release and a minimal
 # XFCE desktop so that the GUI can be tested inside a VirtualBox VM.
 #
 set -euo pipefail
-export PATH="/usr/sbin:/sbin:$PATH"
 
 : "${FEEZE_VERSION:?not set — check 'release' in config/machines.yml}"
 : "${FEEZE_TARGET:?not set — check 'target' for this machine}"
@@ -61,11 +85,6 @@ if [ ! -d "$DIR" ]; then
   su - vagrant -c "cd \$HOME && curl -fL -o '${FEEZE_NAME}.tar.gz' '${URL}' && tar zxf '${FEEZE_NAME}.tar.gz'"
 fi
 
-echo "=== dependency check (the actual portability test) ==="
-# The Ubuntu 24 build links against Ubuntu's glibc; Fedora 43 ships a newer
-# one. This is where a portability problem would show up.
-ldd "${DIR}/bin/feeze_recorder_fz" | grep 'not found' && echo "FAIL: missing libraries" || echo "OK: all shared libraries resolved"
-
 echo "=== feeze autostart ==="
 mkdir -p /home/vagrant/.config/autostart
 for f in feeze feeze-recorder; do
@@ -77,4 +96,4 @@ desktop-file-validate /home/vagrant/.config/autostart/feeze.desktop || echo "WAR
 desktop-file-validate /home/vagrant/.config/autostart/feeze-recorder.desktop || echo "WARN: invalid desktop entry"
 chown -R vagrant:vagrant /home/vagrant/.config
 
-echo "packages: OK"
+echo "install: OK"

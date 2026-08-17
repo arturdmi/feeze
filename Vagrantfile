@@ -1,7 +1,29 @@
-#vagrant up          #create + boot VM (first run downloads the box, slow)
-#vagrant ssh         # log into the VM
-#vagrant halt        # graceful shutdown
-#vagrant destroy     # delete the VM completely */
+# This file is part of the Feeze scheduling analysis tool.
+#
+# This code is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License, version 3,
+# as published by the Free Software Foundation.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License, version 3,
+# along with this program.  If not, see <http://www.gnu.org/licenses/>
+
+
+# -----------------------------------------------------------------------
+#
+#  Copyright (c) 2025, Tokiwa Software GmbH, Germany
+#
+#  Source of Vagrantfile
+#
+#  Defines one virtual machine per entry in config/machines.yml
+#
+#
+# -----------------------------------------------------------------------
+
 require 'yaml'
 
 # Machines are described in YAML
@@ -26,8 +48,10 @@ Vagrant.configure("2") do |config|
       node.vm.hostname = m['name']
 
       # Vagrant copies only the provisioning script into the VM,
+      #so the files it installs have to be mounted separately.
       node.vm.synced_folder "scripts/files", "/tmp/feeze-files"
 
+      # A desktop takes a while to come up on a loaded host.
       node.vm.boot_timeout = 600
 
       node.vm.provider "virtualbox" do |vb|
@@ -36,11 +60,11 @@ Vagrant.configure("2") do |config|
         vb.memory = m.fetch('memory', cfg['defaults']['memory'])
         vb.cpus   = m.fetch('cpus',   cfg['defaults']['cpus'])
         vb.gui    = m.fetch('gui',    cfg['defaults']['gui'])
-         # Default video memory
+         # 128 MB of VRAM; the default leaves the desktop stuck at 800x600.
         vb.customize ["modifyvm", :id, "--vram", "128"]
         vb.customize ["modifyvm", :id, "--graphicscontroller", "vmsvga"]
       end
-      # Script manager
+      # One script per package manager; 'family' selects which.
       node.vm.provision "shell",
         path: "scripts/install-#{m['family']}.sh",
         env: {
