@@ -88,12 +88,14 @@ jobs:
 
       - name: Install build and packaging dependencies
         run: |
-          set -eux
           sudo apt-get update
-          sudo apt-get install -y --no-install-recommends \
-            make clang llvm libelf-dev zlib1g-dev libgc-dev pkg-config file \
-            systemtap-sdt-dev \
-            dpkg-dev rpm zstd libcap2-bin
+          sudo apt-get install openjdk-25-jdk-headless libgc1 libgc-dev
+          sudo apt-get install libelf-dev
+          sudo apt-get install linux-tools-`uname -r`
+          sudo apt-get install pandoc
+
+          echo "JAVA_HOME=/usr/lib/jvm/java-25-openjdk-amd64" >> $GITHUB_ENV
+          echo "/usr/lib/jvm/java-25-openjdk-amd64/bin" >> $GITHUB_PATH
 
       - name: Ensure bpftool works on current kernel
       # taken from https://github.com/actions/runner-images/issues/14203
