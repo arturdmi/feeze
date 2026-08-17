@@ -1537,9 +1537,13 @@ class SchedulingPanorama extends Panorama
 
                 if (_threadShown[i])
                   {
-                    int NAME_DIST_X = 384;
+                    int NAME_DIST_X = 384;  // hard-code minimum pixel distance between thread names
+
+                    // try to find corresponding ns-distance by doubling starting at 1ns
                     long NAME_DIST_NS = 1;
-                    while (compress_x(NAME_DIST_NS) < NAME_DIST_X)
+                    while (compress_x(NAME_DIST_NS) < NAME_DIST_X &&
+                           // if scale factor is very low, we might overflow, so stop in that case
+                           NAME_DIST_NS < Long.MAX_VALUE - NAME_DIST_NS)
                       {
                         NAME_DIST_NS += NAME_DIST_NS;
                       }
@@ -1654,14 +1658,24 @@ class SchedulingPanorama extends Panorama
         _zoom.drawLine(g,1,x, y,
                        x,
                        y + (below ? 1 : -1) * zoom(longer ? 10 : 5));
-        if (((timens / grade) % 10) == 0)
+        if (((timens / grade) % 10) == 0 &&  // draw labels every tenth line
+            grade < Long.MAX_VALUE/10        // unless zoom factor is so small that our grade overflows
+            )
           {
             drawScaleLabel(g,timens,grade*10,x,y, below);
           }
-        timens += grade;
-        x = nanos_to_posx(timens);
+        if (timens < Long.MAX_VALUE - grade) // make sure there is no overflow
+          {
+            timens += grade;                 // next scale line time
+            x = nanos_to_posx(timens);       // next scale line position
+          }
+        else
+          {
+            x = x1;  // overflow, so exit loop and stop drawing
+          }
       }
   }
+
 
   /**
    * Draw label for the scale
