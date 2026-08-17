@@ -1,3 +1,28 @@
+# This file is part of the feeze scheduling analysis tool.
+#
+# This code is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License, version 3,
+# as published by the Free Software Foundation.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License, version 3,
+# along with this program.  If not, see <http://www.gnu.org/licenses/>
+
+
+# -----------------------------------------------------------------------
+#
+#  Copyright (c) 2025, Tokiwa Software GmbH, Germany
+#
+#  Source of feeze.spec.in
+#
+#  This is the rpm spec template used by packaging.mk
+#
+#
+# -----------------------------------------------------------------------
 # Generated from packaging/feeze.spec.in by packaging.mk - do not edit build/.
 #
 # Nothing is compiled here: %install only copies the tree that packaging.mk
@@ -6,6 +31,7 @@
 # The payload consists of prebuilt binaries. Disable debuginfo extraction and
 # the brp-* post-install scripts, which are unavailable when rpmbuild runs on a
 # Debian or Ubuntu host.
+
 %global debug_package     %{nil}
 %global __os_install_post %{nil}
 %global _build_id_links   none
@@ -26,7 +52,7 @@ Requires:       java-25-openjdk
 Requires:       gc
 Requires:       elfutils-libelf
 Requires:       zlib
-Recommends:     bpftool
+
 
 %description
 feeze records scheduling events with a BPF CO-RE program and displays

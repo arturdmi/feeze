@@ -70,7 +70,7 @@ on Fedora, do
 
   > sudo yum install libgc
 "
-#there is no more which on rpm systems
+# Use 'command -v' instead of 'which' for compatibility with Fedora/RHEL
 command -v "$FEEZE_JAVA" >/dev/null || (
     echo 1>&2 "*** java ($FEEZE_JAVA) not found in \$PATH."
     echo 1>&2 "$fix_java"
