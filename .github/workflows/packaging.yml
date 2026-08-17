@@ -86,47 +86,6 @@ jobs:
         with:
           distribution: zulu          # ships jmods for amd64 and arm64
           java-version: ${{ env.JAVA_VERSION }}
-
-      - name: Cache Fuzion toolchain
-        id: fuzion-cache
-        uses: actions/cache@v4
-        with:
-          path: .fuzion-home
-          key: fuzion-${{ env.FUZION_VERSION }}-${{ matrix.arch }}-jdk${{ env.JAVA_VERSION }}
-
-      # The published fuzion release contains a native lib/libfuzion_rt.so, so
-      # it is only usable when it matches this runner. Probe it and fall back to
-      # a source build.
-      - name: Provide Fuzion toolchain
-        if: steps.fuzion-cache.outputs.cache-hit != 'true'
-        run: |
-          set -eux
-          work="$(mktemp -d)"; ok=0
-          if curl -fsSL -o "$work/f.tar.gz" \
-              "https://github.com/tokiwa-software/fuzion/releases/download/v${FUZION_VERSION}/fuzion_${FUZION_VERSION}.tar.gz"; then
-            tar xzf "$work/f.tar.gz" -C "$work"
-            home="$work/fuzion_${FUZION_VERSION}"
-            file "$home/lib/libfuzion_rt.so" | grep -q '${{ matrix.elf_arch }}' && ok=1 \
-              || echo "::notice::prebuilt fuzion is not ${{ matrix.elf_arch }}, building from source"
-          fi
-          if [ "$ok" -eq 0 ]; then
-            git clone --depth 1 --branch "v${FUZION_VERSION}" https://github.com/tokiwa-software/fuzion "$work/src" \
-              || git clone --depth 1 https://github.com/tokiwa-software/fuzion "$work/src"
-            make -C "$work/src" -j"$(nproc)"
-            home="$work/src/build"
-          fi
-          rm -rf .fuzion-home && cp -a "$home" .fuzion-home
-
-      - name: Export FUZION_HOME
-        run: echo "FUZION_HOME=$GITHUB_WORKSPACE/.fuzion-home" >>"$GITHUB_ENV"
-
-      - name: Verify Fuzion toolchain
-        run: |
-          set -eu
-          file "$FUZION_HOME/lib/libfuzion_rt.so" | grep -q '${{ matrix.elf_arch }}' || {
-            echo "::error::cached Fuzion toolchain is not ${{ matrix.elf_arch }}"; exit 1; }
-          "$FUZION_HOME/bin/fz" -version
-
       # Temporary: drop once the arch-parametrised Makefile is merged.
       - name: Patch Makefile for multi-arch
         run: |
