@@ -174,4 +174,4 @@ pkg-rpm: pkg-stage
 .PHONY: pkg-clean
 pkg-clean:
 	rm -rf $(PKG_DIR)
-	rm -f $(PKG_NAME)-*.tar.gz $(PKG_NAME)-*.deb $(PKG_NAME)-*.rpm \
+	rm -f $(PKG_NAME)-*.tar.gz $(PKG_NAME)-*.deb $(PKG_NAME)-*.rpm
