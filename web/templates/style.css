@@ -55,6 +55,27 @@ header {
 header .wrapper{
   display: flex;
   align-items: center;
+  gap: 12px;
+}
+
+header .wrapper #loginStatus{
+  flex-grow: 1;
+  display: flex;
+  justify-content: flex-end;
+}
+
+/* login form: gap works only between direct flex children,
+   so both the form and the button wrapper must be flex containers */
+header form {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+header form > div {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .logintext {
@@ -68,31 +89,49 @@ header .wrapper{
   letter-spacing: 1px;
 }
 
+/* same box for <input type="submit"> and <a>:
+   inline-flex makes width/height apply to the link as well */
 .loginbutton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  width: 110px;
+  height: 24px;
+  padding: 0 12px;
   border: 0;
-  padding: 2px 20px;
-  line-height: 1.2;
+  font: inherit;
   font-size: 1rem;
+  line-height: 1;
   text-align: center;
+  text-decoration: none;
+  white-space: nowrap;
   color: #a4a;
   border-radius: 1px;
-  background-color: rgba(220, 220, 220, 1);
+  background-color: rgb(220, 220, 220);
   background-image: linear-gradient(to top left,
                                     rgba(0, 0, 0, .2),
                                     rgba(0, 0, 0, .2) 30%,
                                     rgba(0, 0, 0, 0));
-  white-space: nowrap;
 }
 
 .loginbutton:hover,
 .loginbutton:focus {
-  background-color: rgba(230, 230, 230, 1);
+  background-color: rgb(230, 230, 230);
+}
+
+/* override the global a:hover { font-weight: bold } so the box does not resize */
+a.loginbutton:hover,
+a.loginbutton:focus {
+  font-weight: normal;
+  text-decoration-line: none;
+  text-shadow: none;
 }
 
 .loginbutton:active {
   font-size: 1rem;
   color: #727;
-  background-color: rgba(205, 205, 205, 1);
+  background-color: rgb(205, 205, 205);
 }
 
 .navtitle{
@@ -243,6 +282,7 @@ table pre {
 /* img should not lead to overflow i.e. on mobile devices */
 img {
   max-width: 100%;
+  min-width: 40px;
 }
 
 .gray {
@@ -297,48 +337,6 @@ img {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-}
-
-.logintext {
-  width: 118px;
-  color: #333;
-  padding: 2px 2px 2px 2px;
-  line-height: 1.2;
-  border-radius: 3px;
-  border: 1px solid #ccc;
-  font-size: .8rem;
-  letter-spacing: 1px;
-}
-
-.loginbutton {
-  border: 0;
-  padding: 2px 20px;
-  line-height: 1.2;
-  font-size: 1rem;
-  text-align: center;
-  color: #a4a;
-  border-radius: 1px;
-  background-color: rgba(220, 220, 220, 1);
-  background-image: linear-gradient(to top left,
-                                    rgba(0, 0, 0, .2),
-                                    rgba(0, 0, 0, .2) 30%,
-                                    rgba(0, 0, 0, 0));
-  white-space: nowrap;
-}
-
-.loginbutton:hover,
-.loginbutton:focus {
-  background-color: rgba(230, 230, 230, 1);
-}
-
-.loginbutton:active {
-  font-size: 1rem;
-  color: #727;
-  background-color: rgba(205, 205, 205, 1);
-}
-
-.navtitle{
-  display: inline-block;
 }
 
 .mydir {
@@ -434,25 +432,6 @@ a:visited:focus {
 }
 
 
-header {
-  padding: 10px;
-  background: #24FF24;
-  background-color: #242424;
-  color: white;
-  border-color: #ff0000;
-  opacity: 0.8;
-}
-
-header .wrapper{
-  display: flex;
-  align-items: center;
-}
-
-header .wrapper #loginStatus{
-  flex-grow: 1;
-}
-
-
 .d-grid {
   display: grid;
 }
@@ -464,23 +443,30 @@ header .wrapper #loginStatus{
 
 .nav_bar
 {
+    /* fixed: columns share the width evenly, content length is ignored */
+    table-layout: fixed;
     padding: 1em 1em 0 1em;
     width: 100%;
+    border-collapse: separate;
+    border-spacing: 4px;
 }
 
 .nav_el
 {
- #   background-color: var(--tokiwa_blue_pale) !important;
-    padding: 0em 0.2em 0em 0.2em;
-    width: 14.4%;
+    background-color: var(--tokiwa_blue_pale) !important;
+    padding: 0;
+    width: auto;
 }
 
 .nav_el2
 {
     background-color: white;
-    padding: 0.2em 1em 0.2em 1em;
+    padding: 0.4em 0.2em;
     text-align: center;
     display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .nav_el2:hover,
@@ -497,17 +483,20 @@ header .wrapper #loginStatus{
   .nav_bar {
     display: block;
     padding: 0.5em;
+    border-spacing: 0;
   }
-  .nav_bar tbody,
+  .nav_bar tbody {
+    display: block;
+  }
   .nav_bar tr {
-    display: flex;
-    flex-wrap: wrap;
+    /* two equal columns; grid items do not stretch into empty tracks */
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
     gap: 4px;
   }
   .nav_el {
-    width: auto !important;   /* убрать жёсткие 14.4% */
-    flex: 1 1 auto;
-    padding: 0;
+    display: block;
+    width: auto;
   }
 }
 
