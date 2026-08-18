@@ -73,8 +73,8 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - { arch: amd64, runner: ubuntu-24.04,     elf_arch: x86-64,  vmlinux_arch: x86_64 }
-          - { arch: arm64, runner: ubuntu-24.04-arm, elf_arch: aarch64, vmlinux_arch: arm64 }
+          - { arch: amd64, runner: ubuntu-24.04,     elf_arch: x86-64 }
+          - { arch: arm64, runner: ubuntu-24.04-arm, elf_arch: aarch64 }
     env:
       VERSION: ${{ needs.facts.outputs.version }}
       RELEASE_KIND: ${{ needs.facts.outputs.release-kind }}
@@ -84,6 +84,7 @@ jobs:
           submodules: recursive
 
       - uses: ./.github/actions/install-deps
+
 
       - name: Ensure bpftool works on current kernel
       # taken from https://github.com/actions/runner-images/issues/14203
@@ -104,17 +105,6 @@ jobs:
           fi
           /usr/sbin/bpftool -V
 
-      # Temporary: drop once the arch-parametrised Makefile is merged.
-      - name: Patch Makefile for multi-arch
-        run: |
-          set -eu
-          if grep -q 'vmlinux.h/include/x86_64/' Makefile; then
-            echo "::warning::patching hardcoded vmlinux.h arch path"
-            sed -i "s#vmlinux.h/include/x86_64/#vmlinux.h/include/${{ matrix.vmlinux_arch }}/#" Makefile
-          fi
-          if grep -q "sed 's/x86_64/x86/'" Makefile; then
-            sed -i "s#sed 's/x86_64/x86/'#sed -e 's/x86_64/x86/' -e 's/aarch64/arm64/'#" Makefile
-          fi
 
       # Build only what is shipped: `make all` also runs the pandoc manual rules
       - name: Build
