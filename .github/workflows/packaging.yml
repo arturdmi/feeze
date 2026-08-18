@@ -128,6 +128,17 @@ jobs:
       - name: Create packages
         run: make packages
 
+      - name: Test packages in clean containers
+        run: |
+          set -eux
+          for image in debian:trixie fedora:43; do
+            echo "== $image =="
+            docker run --rm \
+              -v "$PWD:/pkg" \
+              -v "$PWD/.github/actions/test-package/test-package.sh:/test-package.sh:ro" \
+              -w /pkg "$image" sh /test-package.sh
+          done
+
       - uses: actions/upload-artifact@v4
         with:
           name: packages-linux-${{ matrix.arch }}
@@ -137,36 +148,12 @@ jobs:
             *.rpm
           if-no-files-found: error
 
-  test-packages:
-    name: Test ${{ matrix.image }} on ${{ matrix.arch }}
-    needs: [package-linux]
-    runs-on: ${{ matrix.runner }}
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - { arch: amd64, runner: ubuntu-24.04, image: 'debian:trixie' }
-          - { arch: amd64, runner: ubuntu-24.04, image: 'fedora:43' }
-          - { arch: arm64, runner: ubuntu-24.04-arm, image: 'debian:trixie' }
-          - { arch: arm64, runner: ubuntu-24.04-arm, image: 'fedora:43' }
-    steps:
-      - uses: actions/checkout@v5
-      - uses: actions/download-artifact@v4
-        with:
-          name: packages-linux-${{ matrix.arch }}
-      - name: Install in a clean container
-        run: |
-          docker run --rm \
-            -v "$PWD:/pkg" \
-            -v "$PWD/.github/actions/test-package/test-package.sh:/test-package.sh:ro" \
-            -w /pkg '${{ matrix.image }}' sh /test-package.sh
-
   release:
     name: Publish release
     # Everything except pull requests: forks do not get contents:write and the
     # upload would fail with 403.
     if: github.event_name != 'pull_request'
-    needs: [facts, test-packages]
+    needs: [facts, package-linux]
     runs-on: ubuntu-24.04
     permissions:
       contents: write
