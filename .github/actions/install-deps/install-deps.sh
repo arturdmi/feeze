@@ -32,5 +32,7 @@ sudo apt-get install -y \
   pandoc \
   "linux-tools-$(uname -r)"
 
-echo "JAVA_HOME=/usr/lib/jvm/java-25-openjdk-amd64" >> $GITHUB_ENV
-echo "/usr/lib/jvm/java-25-openjdk-amd64/bin" >> $GITHUB_PATH
+JAVA_HOME="/usr/lib/jvm/java-25-openjdk-$(dpkg --print-architecture)"
+test -x "$JAVA_HOME/bin/javac"
+echo "JAVA_HOME=$JAVA_HOME" >>"$GITHUB_ENV"
+echo "$JAVA_HOME/bin"       >>"$GITHUB_PATH"
