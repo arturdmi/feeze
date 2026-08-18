@@ -36,9 +36,6 @@ on:
 permissions:
   contents: read
 
-env:
-  JAVA_VERSION: '25'
-
 jobs:
 
   facts:
@@ -107,11 +104,6 @@ jobs:
           fi
           /usr/sbin/bpftool -V
 
-
-      - uses: actions/setup-java@v5
-        with:
-          distribution: zulu          # ships jmods for amd64 and arm64
-          java-version: ${{ env.JAVA_VERSION }}
       # Temporary: drop once the arch-parametrised Makefile is merged.
       - name: Patch Makefile for multi-arch
         run: |
