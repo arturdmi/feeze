@@ -25,10 +25,11 @@
 #
 # -----------------------------------------------------------------------
 sudo apt-get update
-sudo apt-get install openjdk-25-jdk-headless libgc1 libgc-dev
-sudo apt-get install libelf-dev
-sudo apt-get install linux-tools-`uname -r`
-sudo apt-get install pandoc
+sudo apt-get install -y \
+  openjdk-25-jdk-headless libgc1 libgc-dev \
+  libelf-dev \
+  pandoc \
+  "linux-tools-$(uname -r)"
 
 echo "JAVA_HOME=/usr/lib/jvm/java-25-openjdk-amd64" >> $GITHUB_ENV
 echo "/usr/lib/jvm/java-25-openjdk-amd64/bin" >> $GITHUB_PATH
