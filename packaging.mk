@@ -52,8 +52,7 @@ PKG_BINARIES := $(BUILD_DIR)/bin/feeze          \
                 $(BUILD_DIR)/bin/feeze_desktop  \
                 $(BUILD_DIR)/bin/$(RECORDER_BIN)
 
-.PHONY: packages
-packages: pkg-tar pkg-deb pkg-rpm
+packages: $(PKG_TARDIR).tar.gz $(PKG_DEB_FILE) $(PKG_RPM_FILE)
 
 # -----------------------------------------------------------------------
 # Architecture guard: refuse to package a tree that was not built natively.
@@ -104,8 +103,7 @@ pkg-stage: pkg-check-arch $(PKG_BINARIES) $(FEEZE_REPO)/packaging/feeze.desktop
 # -----------------------------------------------------------------------
 # Zero-install portable tarball
 # -----------------------------------------------------------------------
-.PHONY: pkg-tar
-pkg-tar: pkg-stage
+$(PKG_TARDIR).tar.gz: pkg-stage
 	rm -rf $(PKG_DIR)/$(PKG_TARDIR) $(PKG_TARDIR).tar.gz
 	mkdir -p $(PKG_DIR)/$(PKG_TARDIR)
 	cp -a $(PKG_SHARE)/. $(PKG_DIR)/$(PKG_TARDIR)/
@@ -115,8 +113,7 @@ pkg-tar: pkg-stage
 # -----------------------------------------------------------------------
 # Debian package build (.deb) using raw dpkg-deb.
 # -----------------------------------------------------------------------
-.PHONY: pkg-deb
-pkg-deb: pkg-stage
+$(PKG_DEB_FILE): pkg-stage
 	rm -rf $(PKG_DIR)/deb $(PKG_DEB_FILE)
 	mkdir -p $(PKG_DIR)/deb/DEBIAN
 	cp -a $(PKG_ROOT)/. $(PKG_DIR)/deb/
@@ -142,8 +139,7 @@ pkg-deb: pkg-stage
 # dependencies generated on a Debian host do not always map onto the provides
 # of the target distribution.
 # -----------------------------------------------------------------------
-.PHONY: pkg-rpm
-pkg-rpm: pkg-stage
+$(PKG_RPM_FILE): pkg-stage
 	rm -rf $(PKG_DIR)/rpm
 	mkdir -p $(PKG_DIR)/rpm/SPECS $(PKG_DIR)/rpm/BUILD $(PKG_DIR)/rpm/RPMS $(PKG_DIR)/rpm/SOURCES
 
