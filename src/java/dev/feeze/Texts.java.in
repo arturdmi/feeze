@@ -1,0 +1,128 @@
+/*
+
+This file is part of the Feeze scheduling analysis tool.
+
+This code is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License, version 3,
+as published by the Free Software Foundation.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License, version 3,
+along with this program.  If not, see <http://www.gnu.org/licenses/>
+
+*/
+
+/*-----------------------------------------------------------------------
+ *
+ * Copyright (c) 2025, Tokiwa Software GmbH, Germany
+ *
+ * Java source code of class dev.feeze.Texts.java
+ *
+ *---------------------------------------------------------------------*/
+
+
+package dev.feeze;
+
+import dev.flang.util.ANY;
+
+/*---------------------------------------------------------------------*/
+
+
+/**
+ * This file collects texts used in Feeze.
+ *
+ * These texts may originate in other documents like the user documentation and
+ * are automatically inserted here by the Makefile.
+ *
+ * @author Fridtjof Siebert (siebert@tokiwa.software)
+ */
+public class Texts extends ANY
+{
+
+
+  /*-------------------------  static methods  --------------------------*/
+
+
+  static String tooltiptext(String html)
+  {
+    if (html.startsWith("--") || html.endsWith("--"))
+      {
+        System.err.println("*** warning: tooltip extraction failed for "+html);
+      }
+
+    // NYI: BUG: Tooltip width is hard-coded at 380px here. I did not manage to do something more dynamic like `80em` or `40%`.
+    return
+      """
+      <html>
+      <div width="380px">
+      """
+      +
+      html
+      +
+      """
+      </div>
+      </html>
+      """;
+  }
+
+
+  /*----------------------------  constants  ----------------------------*/
+
+
+  /**
+   * tool-tip text for Feeze control window`s `fuzion home` text box
+   */
+  static String FUZION_HOME_TOOLTIP = tooltiptext("""
+--FUZION_HOME_TOOLTIP--
+                                                           """);
+
+
+  /**
+   * tool-tip text for Feeze control window`s `shared memory name` text box
+   *
+   * NOTE: This is intentionally the same text as SHARED_MEM_SIZE_TOOLTIP
+   */
+  static String SHARED_MEM_NAME_TOOLTIP = tooltiptext("""
+--SHARED_MEM_TOOLTIP--
+                                                           """);
+
+
+  /**
+   * tool-tip text for Feeze control window`s `shared memory size` text box
+   *
+   * NOTE: This is intentionally the same text as SHARED_MEM_NAME_TOOLTIP
+   */
+  static String SHARED_MEM_SIZE_TOOLTIP = tooltiptext("""
+--SHARED_MEM_TOOLTIP--
+                                                           """);
+
+
+  /**
+   * tool-tip text for Feeze control window`s `start local recorder` button
+   */
+  static String START_LOCAL_RECORDER_TOOLTIP = tooltiptext("""
+--START_LOCAL_RECORDER_TOOLTIP--
+                                                           """);
+
+
+  /**
+   * tool-tip text for Feeze control window`s `record`/`stop` button
+   */
+  static String RECORD_TOOLTIP = tooltiptext("""
+--RECORDING_SCHEDULING_DATA_TOOLTIP--
+                                                           """);
+
+
+  /**
+   * tool-tip text for Feeze control window`s `sshow data` button
+   */
+  static String SHOW_TOOLTIP = tooltiptext("""
+--DISPLAYING_RECORDED_DATA_TOOLTIP--
+                                                           """);
+
+
+}

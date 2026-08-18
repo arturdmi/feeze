@@ -47,8 +47,6 @@ FUZION_HOME       ?= $(DOWNLOADED_FUZION)
 # main name
 RECORDER_BIN := feeze_recorder
 BPF_MAIN := feeze_recorder
-C_MAIN := feeze_recorder_c
-FZ_MAIN := feeze_recorder_fz
 
 LIBBPF      := $(FEEZE_REPO)/libbpf
 LIBBPF_SRC  := $(LIBBPF)/src
@@ -59,7 +57,9 @@ ARCH := $(shell uname -m | sed 's/x86_64/x86/')
 
 BPFTOOL ?= /usr/sbin/bpftool
 
-JAVA_SOURCES := $(shell find $(FEEZE_SRC_JAVA) -name "*.java")
+FEEZE_GENERATED_TEXTS_JAVA = $(BUILD_DIR)/generated/java/dev/feeze/Texts.java
+GENERATED_JAVA_SOURCES := $(FEEZE_GENERATED_TEXTS_JAVA)
+JAVA_SOURCES := $(shell find $(FEEZE_SRC_JAVA) -name "*.java") $(GENERATED_JAVA_SOURCES)
 JAVA_MAIN := Feeze
 JAVA_MAIN_CLASSFILE := dev/feeze/$(JAVA_MAIN).class
 JAVA_MAIN_CLASS     := dev.feeze.$(JAVA_MAIN)
@@ -131,10 +131,6 @@ $(BUILD_DIR)/obj/feeze_recorder.o: $(FEEZE_SRC)/c/feeze_recorder.c $(BUILD_INCLU
 	mkdir -p $(@D)
 	clang -I$(FEEZE_SRC)/include -I$(BUILD_INCLUDE) -I$(LIBBPF_DEST) -o $@ -c $(filter %.c,$^)
 
-$(BUILD_DIR)/bin/$(C_MAIN): $(BUILD_DIR)/obj/feeze_recorder.o $(BUILD_DIR)/obj/feeze_record.o $(LIBBPF_OBJ)
-	mkdir -p $(@D)
-	clang -g -Wall $^ -lelf -lz -o $@
-
 # Choose privilege escalation tool
 PKEXEC := $(shell command -v pkexec 2>/dev/null)
 SUDO   := $(shell command -v sudo 2>/dev/null)
@@ -149,13 +145,13 @@ else
   ELEVATE := pkexec
 endif
 
-$(BUILD_DIR)/bin/$(FZ_MAIN): $(FEEZE_SRC)/fuzion/feeze_recorder.fz $(BUILD_DIR)/obj/feeze_record.o $(LIBBPF_OBJ) $(BUILD_DIR)/check_FUZION_HOME
+$(BUILD_DIR)/bin/$(RECORDER_BIN): $(FEEZE_SRC)/fuzion/feeze_recorder.fz $(BUILD_DIR)/obj/feeze_record.o $(LIBBPF_OBJ) $(BUILD_DIR)/check_FUZION_HOME
 	mkdir -p $(@D)
 	$(FUZION_HOME)/bin/fz -c $< "-CInclude=feeze_record.h" -CFlags="-I$(FEEZE_SRC)/include  $(BUILD_DIR)/obj/feeze_record.o $(LIBBPF_OBJ) -lelf -lz"  -o=$@
 
 # run the binary
-run_recorder: $(BUILD_DIR)/bin/$(C_MAIN)
-	$(ELEVATE) $(BUILD_DIR)/bin/$(C_MAIN)
+run_recorder: $(BUILD_DIR)/bin/$(RECORDER_BIN)
+	$(ELEVATE) $(BUILD_DIR)/bin/$(RECORDER_BIN)
 
 $(BUILD_CLASSES)/$(JAVA_MAIN_CLASSFILE): $(JAVA_SOURCES)
 	mkdir -p $(BUILD_CLASSES)
@@ -175,10 +171,6 @@ $(BUILD_DIR)/icon.svg: assets/logo.svg
 	mkdir -p $(@D)
 	cp $^ $@
 
-$(BUILD_DIR)/bin/$(RECORDER_BIN): $(BUILD_DIR)/bin/$(FZ_MAIN)
-	rm -f $@
-	ln -s $(FZ_MAIN) $@
-
 $(BUILD_DIR)/manual/index.html: doc/Manual.md
 	mkdir -p $(@D)
 	pandoc -f markdown -t html $^ >$@
@@ -190,6 +182,17 @@ $(BUILD_DIR)/manual/readme.html: README.md
 	pandoc -f markdown -t html $^ >$@
 	diff $@ web/content/doc/pages/readme.html >/dev/null || cp $@ web/content/doc/pages/readme.html
 	cp -rf doc/images $(@D)
+
+TTTMP := $(BUILD_DIR)/tool_tip_text.tmp
+$(FEEZE_GENERATED_TEXTS_JAVA): $(FEEZE_SRC_JAVA)/dev/feeze/Texts.java.in $(BUILD_DIR)/manual/index.html
+	mkdir -p $(@D)
+	cat $< >$@
+	grep -Pzo '<h. id="starting-the-feeze-recorder">[\s\S]*?(?=<h)'             $(BUILD_DIR)/manual/index.html >$(TTTMP) && sed -i -e "s~--START_LOCAL_RECORDER_TOOLTIP--~cat $(TTTMP)~e"      $@
+	grep -Pzo '<h. id="recording-scheduling-data">[\s\S]*?(?=<h)'               $(BUILD_DIR)/manual/index.html >$(TTTMP) && sed -i -e "s~--RECORDING_SCHEDULING_DATA_TOOLTIP--~cat $(TTTMP)~e" $@
+	grep -Pzo '<h. id="displaying-recorded-data">[\s\S]*?(?=<h)'                $(BUILD_DIR)/manual/index.html >$(TTTMP) && sed -i -e "s~--DISPLAYING_RECORDED_DATA_TOOLTIP--~cat $(TTTMP)~e"  $@
+	grep -Pzo '<h. id="configuring-the-fuzion-installation">[\s\S]*?(?=<h)'     $(BUILD_DIR)/manual/index.html >$(TTTMP) && sed -i -e "s~--FUZION_HOME_TOOLTIP--~cat $(TTTMP)~e"  $@
+	grep -Pzo '<h. id="configuring-shared-memory-communication">[\s\S]*?(?=<h)' $(BUILD_DIR)/manual/index.html >$(TTTMP) && sed -i -e "s~--SHARED_MEM_TOOLTIP--~cat $(TTTMP)~e"  $@
+	rm $(TTTMP)
 
 # run the GUI. NYI: to be replaced by fuzion implementation, make taret run_control
 run: $(BUILD_DIR)/bin/feeze $(BUILD_DIR)/bin/feeze_desktop $(BUILD_DIR)/bin/$(RECORDER_BIN)

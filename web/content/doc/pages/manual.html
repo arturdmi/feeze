@@ -4,11 +4,11 @@
 using eBPF.</p>
 <h2 id="download-and-installation">Download and Installation</h2>
 <h3 id="feeze-releases-download">Feeze Releases Download</h3>
-<p>Downloadable releases will be published on github under <a
+<p>Downloadable releases will be published on GitHub under <a
 href="https://github.com/tokiwa-software/feeze/releases">feeze
 releases</a>.</p>
 <h3 id="installation-from-tarball">Installation from tarball</h3>
-<p>Installing Feeze from a tarball gives you most control over where
+<p>Installing feeze from a tarball gives you most control over where
 feeze will get installed. You will need to unpack the archive using</p>
 <pre><code># tar zxf feeze_VERSION_TARGET.tar.gz</code></pre>
 <p>where <code>VERSION</code> is the feeze version and
@@ -24,21 +24,21 @@ name will be <code>feeze_0.001dev_Ubuntu_24</code>.</p>
 <p>To run feeze, you will need to install</p>
 <ul>
 <li><p>OpenJDK version 25 or later</p>
-<p>The Java environment used for the GUI, must not be headless</p>
-<p>On ubuntu, do</p>
+<p>The Java environment used for the GUI, it must not be headless</p>
+<p>On Ubuntu, do</p>
 <pre><code>&gt; sudo apt update
 &gt; sudo apt install -y openjdk-25-jdk</code></pre>
 <p>on Fedora,</p>
-<pre><code>&gt; sudo yum install java-25-openjdk.x86_64</code></pre>
+<pre><code>&gt; sudo dnf install java-25-openjdk.x86_64</code></pre>
 <p>To set the PATH, you might have to do</p>
 <pre><code>&gt; export PATH=/usr/lib/jvm/jre-25/bin:$PATH</code></pre>
 <p>or similar.</p></li>
 <li><p>libgc1.so</p>
-<p>To intall libgc.so, on unbuntu, do</p>
-<pre><code>&gt; sudo apt-get update
-&gt; sudo apt-get install libgc</code></pre>
+<p>To install libgc.so, on Ubuntu, do</p>
+<pre><code>&gt; sudo apt update
+&gt; sudo apt install libgc</code></pre>
 <p>on Fedora, do</p>
-<pre><code>&gt; sudo yum install libgc</code></pre>
+<pre><code>&gt; sudo dnf install libgc</code></pre>
 <p>This is the Boehm-Demers-Weiser’s GC that is currently used by Fuzion
 until an exact GC is available.</p></li>
 </ul>
@@ -74,7 +74,7 @@ the path to the Fuzion installation must be given via the button
 <h3 id="configuring-shared-memory-communication">Configuring shared
 memory communication</h3>
 <p>The feeze recorder communicates with the feeze GUI via shared memory
-that is identified by a file name. This name of this file must be given
+that is identified by a file name. The name of this file must be given
 as <code>Shared memory file</code>. This file may also be used to store
 scheduling data for later.</p>
 <p>Additionally, a maximum size of the shared memory may be given. Trace
@@ -87,13 +87,14 @@ recording will stop.</p>
 re-starting the recorder while the date from an earlier trace is being
 displayed, may result in corrupting the displayed data.</p>
 <h3 id="recording-scheduling-data">Recording Scheduling Data</h3>
-<p>The <code>record</code> button or the key combination Alt-R will
-start recording scheduling data. While recording, a blue bar next to
-<code>Used Memory:</code> will display the amount of shared memory that
-is used by the recorded data. This bar will grow continuously with the
-recording. While recording, the <code>record</code> button is changed
-into a <code>stop</code> button. This button or hitting Alt-R again will
-stop the current recording.</p>
+<p>The <code>record</code> button or the key combination
+<kbd>Alt</kbd>+<kbd>R</kbd> will start recording scheduling data. While
+recording, a blue bar next to <code>Used Memory:</code> will display the
+amount of shared memory that is used by the recorded data. This bar will
+grow continuously with the recording. While recording, the
+<code>record</code> button is changed into a <code>stop</code> button.
+This button or hitting <kbd>Alt</kbd>+<kbd>R</kbd> again will stop the
+current recording.</p>
 <p>If not stopped explicitly, the recording will stop automatically once
 the shared memory buffer is full.</p>
 <h3 id="displaying-recorded-data">Displaying recorded data</h3>
@@ -106,9 +107,12 @@ details.</p>
 shortcuts</h3>
 <p>The following key-combination may be used as shortcuts:</p>
 <ul>
-<li><p>Alt-S for <code>start local recorder</code> button</p></li>
-<li><p>Alt-R for <code>record</code> button</p></li>
-<li><p>Alt-D for <code>show data</code> button</p></li>
+<li><p><kbd>Alt</kbd>+<kbd>S</kbd> for <code>start local recorder</code>
+button</p></li>
+<li><p><kbd>Alt</kbd>+<kbd>R</kbd> for <code>record</code>
+button</p></li>
+<li><p><kbd>Alt</kbd>+<kbd>D</kbd> for <code>show data</code>
+button</p></li>
 </ul>
 <h2 id="scheduling-data-window">Scheduling Data Window</h2>
 <p>The scheduling data window looks like this:</p>
@@ -177,9 +181,9 @@ to run waiting in a CPU’s ready queue.</p></li>
 <li><p>thick horizontal green bar: <code>running</code> a thread that is
 running on a CPU.</p></li>
 </ul>
-<p>Thread state changes performed that are caused by different threads
-are shown using blue arrows from the thread performing the state change
-to the affected thread.</p>
+<p>Thread state changes that are caused by different threads are shown
+using blue arrows from the thread performing the state change to the
+affected thread.</p>
 <p>If thread state changes occur too frequently to be displayed at the
 current time resolutions, the state changes will not be drawn but
 collapsed into dark green areas. These dark green areas illustrate that
@@ -210,29 +214,28 @@ in this state <code>100µs 598ns</code>, the CPU it is running on
 recording that we are looking at <code>2s 167ms 974µs 688ns</code>.</p>
 <h3 id="scheduling-data-window-mouse-buttons">Scheduling Data Window
 Mouse Buttons</h3>
-<h4 id="time-scale">time scale:</h4>
-<p>Expanding the time scale helps getting a more detailed view of what
-is happening, while compressing gives an overview over longer
-periods.</p>
+<h4 id="time-scale">Time Scale</h4>
+<p>Expanding the time scale helps to get a more detailed view of what is
+happening, while compressing gives an overview over longer periods.</p>
 <ul>
-<li><p>left button click/hold: expand time scale one step /
-repeatedly</p></li>
-<li><p>middle button click/hold: compress time scale one step /
-repeatedly</p></li>
+<li><p><kbd>Left Mouse Button</kbd> click/hold: expand time scale one
+step / repeatedly</p></li>
+<li><p><kbd>Middle Mouse Button</kbd> click/hold: compress time scale
+one step / repeatedly</p></li>
 </ul>
-<h4 id="zoom">zoom</h4>
-<p>Zoom help to increase or shrink the size of the overall displayed
+<h4 id="zoom">Zoom</h4>
+<p>Zoom helps to increase or shrink the size of the overall displayed
 graph. This helps to get the best compromise between readability and
 amount of data displayed on the screen. Note that zooming in our out
 does not change the detail of information that is shown, it only changes
 the size of the graphical elements.</p>
 <ul>
-<li><p>shift + left button click/hold: zoom in one step /
-repeatedly</p></li>
-<li><p>shift + middle button click/hold: zoom out one step /
-repeatedly</p></li>
+<li><p><kbd>Shift</kbd> + <kbd>Left Mouse Button</kbd> click/hold: zoom
+in one step / repeatedly</p></li>
+<li><p><kbd>Shift</kbd> + <kbd>Middle Mouse Button</kbd> click/hold:
+zoom out one step / repeatedly</p></li>
 </ul>
-<h4 id="dragging">dragging</h4>
+<h4 id="dragging">Dragging</h4>
 <p>Dragging the displayed data area allows moving along the time axis
 (horizontally) and the user/processes/threads axis (vertically):</p>
 <ul>
@@ -242,12 +245,12 @@ repeatedly</p></li>
 Window Keyboard shortcuts</h3>
 <p>The following key-combination may be used as shortcuts:</p>
 <ul>
-<li><p>Alt-X expand time one step</p></li>
-<li><p>Alt-C compress time one step</p></li>
-<li><p>Alt-Z zoom in one step</p></li>
-<li><p>Alt-O zoom out one step</p></li>
-<li><p>Ctrl-W close window</p></li>
-<li><p>Ctrl-Q quite feeze GUI</p></li>
+<li><p><kbd>Alt</kbd>+<kbd>X</kbd> expand time one step</p></li>
+<li><p><kbd>Alt</kbd>+<kbd>C</kbd> compress time one step</p></li>
+<li><p><kbd>Alt</kbd>+<kbd>Z</kbd> zoom in one step</p></li>
+<li><p><kbd>Alt</kbd>+<kbd>O</kbd> zoom out one step</p></li>
+<li><p><kbd>Ctrl</kbd>+<kbd>W</kbd> close window</p></li>
+<li><p><kbd>Ctrl</kbd>+<kbd>Q</kbd> quite feeze GUI</p></li>
 </ul>
 <p>Have fun!</p>
 <!--  LocalWords:  img src feeze eBPF zxf dev OpenJDK libgc Boehm Demers GC NYI Weiser's Fuzion recoder sudo fuzion msg fuzion's Xwaylend firefox wakesup Ctrl  -->

@@ -73,9 +73,9 @@ public class ControlFrame extends JFrame
 {
 
 
-  static int INITIAL_SHARED_MEM_SIZE = 64*1024*1024;
+  static long INITIAL_SHARED_MEM_SIZE = 64L*1024*1024;
 
-  JTextField _fuzionHomeDir           ;
+  JTextField _fuzionHomeDir;
   JTextField _sharedMemName;
   JTextField _sharedMemSize;
   JProgressBar _usedMemBar;
@@ -85,6 +85,16 @@ public class ControlFrame extends JFrame
   Data _data = null;
   String _dataName = null;
 
+
+  /**
+   * Saturating long -> int conversion
+   */
+  static int long2int(long l)
+  {
+    var l1 = Long.min(Integer.MAX_VALUE, l);
+    var l2 = Long.max(Integer.MIN_VALUE, l1);
+    return (int) l2;
+  }
 
 
   long shMemSize()
@@ -121,6 +131,7 @@ public class ControlFrame extends JFrame
       {
         // ignore, -1 will be returned.
       }
+    _usedMemBar.setMaximum(long2int(result));
     return result;
   }
 
@@ -157,14 +168,20 @@ public class ControlFrame extends JFrame
         _sharedMemSize.setMaximumSize(new Dimension(Integer.MAX_VALUE, 2));
 
         var usedMemLabel = new JLabel("Used Memory:");
-        _usedMemBar   = new JProgressBar(0, INITIAL_SHARED_MEM_SIZE);
+        _usedMemBar   = new JProgressBar(0, long2int(INITIAL_SHARED_MEM_SIZE));
         _usedMemBar.setValue(0);
         _usedMemBar.setStringPainted(true);
 
-        _startRecorder = button("start local recorder", KeyEvent.VK_S, "start local recording service, requires superuser status");
-        _record = button("record", KeyEvent.VK_R, "start local recording service, requires superuser status");
-        _record.setEnabled(false);
-        _showData = button("show data", KeyEvent.VK_D, "show recorded data");
+        _startRecorder = button("start local recorder", KeyEvent.VK_S, null);
+        _record        = button("record"              , KeyEvent.VK_R, null); _record.setEnabled(false);
+        _showData      = button("show data"           , KeyEvent.VK_D, null);
+
+        _fuzionHomeDir.setToolTipText(Texts.FUZION_HOME_TOOLTIP);
+        _sharedMemName.setToolTipText(Texts.SHARED_MEM_NAME_TOOLTIP);
+        _sharedMemSize.setToolTipText(Texts.SHARED_MEM_SIZE_TOOLTIP);
+        _startRecorder.setToolTipText(Texts.START_LOCAL_RECORDER_TOOLTIP);
+        _record       .setToolTipText(Texts.RECORD_TOOLTIP);
+        _showData     .setToolTipText(Texts.SHOW_TOOLTIP);
 
         if (!Feeze.sharedMemExists(_sharedMemName.getText()))
           {

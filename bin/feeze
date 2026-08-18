@@ -61,7 +61,7 @@ or similar."
 
 # output text explaining how to install libgc.so corretly
 #
-fix_libgc="To intall libgc.so, on unbuntu, do
+fix_libgc="To install libgc.so, on unbuntu, do
 
   > sudo apt-get update
   > sudo apt-get install libgc
@@ -86,7 +86,9 @@ if test "$java_version" -lt 25;  then
     exit 1
 fi
 
-if !(ldconfig -p | grep libgc\.so >/dev/null); then
+if !(command -v ldconfig >/dev/null); then
+    echo 1>&2 "*** ldconfig not installed, libgc installation detection does not work."
+elif !(ldconfig -p | grep libgc\.so >/dev/null); then
     echo 1>&2 "*** libgc.so not installed."
     echo 1>&2 "$fix_libgc"
     exit 1
