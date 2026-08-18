@@ -32,12 +32,8 @@ REC=/usr/share/feeze/bin/feeze_recorder
 # Loading BPF programs and reading perf events needs CAP_BPF + CAP_PERFMON;
 # pinning maps needs CAP_SYS_RESOURCE on older kernels. Granting them here
 # avoids running the recorder as root. Failure is not fatal: sudo still works.
-if command -v setcap >/dev/null 2>&1 && [ -f "$REC" ]; then
-  setcap cap_bpf,cap_perfmon,cap_sys_resource+ep "$REC" 2>/dev/null \
-    || echo "feeze: could not set capabilities on $REC, run it as root" >&2
-else
-  echo "feeze: setcap unavailable, run the recorder as root" >&2
-fi
+setcap cap_bpf,cap_perfmon,cap_sys_resource+ep "$REC" \
+  || echo "feeze: could not set capabilities on $REC, run it as root" >&2
 
 if command -v update-desktop-database >/dev/null 2>&1; then
   update-desktop-database -q /usr/share/applications || true

@@ -50,7 +50,7 @@ Requires:       java-25-openjdk
 Requires:       gc
 Requires:       elfutils-libelf
 Requires:       zlib
-
+Requires:       libcap
 
 %description
 feeze records scheduling events with a BPF CO-RE program and displays
