@@ -28,6 +28,7 @@ sudo apt-get update
 sudo apt-get install -y \
   openjdk-25-jdk-headless libgc1 libgc-dev \
   libelf-dev \
+  binutils\
   pandoc \
   "linux-tools-$(uname -r)"
 

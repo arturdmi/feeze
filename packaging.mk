@@ -52,6 +52,9 @@ PKG_BINARIES := $(BUILD_DIR)/bin/feeze          \
                 $(BUILD_DIR)/bin/feeze_desktop  \
                 $(BUILD_DIR)/bin/$(RECORDER_BIN)
 
+# ELF e_machine as printed by readelf, used to verify the build was native.
+ELF_MACHINE := $(shell uname -m | sed -e 's/x86_64/X86-64/' -e 's/aarch64/AArch64/')
+
 packages: $(PKG_TARDIR).tar.gz $(PKG_DEB_FILE) $(PKG_RPM_FILE)
 
 # -----------------------------------------------------------------------
@@ -60,11 +63,8 @@ packages: $(PKG_TARDIR).tar.gz $(PKG_DEB_FILE) $(PKG_RPM_FILE)
 # -----------------------------------------------------------------------
 .PHONY: pkg-check-arch
 pkg-check-arch: $(BUILD_DIR)/bin/$(RECORDER_BIN)
-	@file $(BUILD_DIR)/bin/$(RECORDER_BIN) | grep -q "$(FILE_ARCH)" || { \
-	  echo "*** error: $(BUILD_DIR)/bin/$(RECORDER_BIN) is not a $(FILE_ARCH) binary." >&2; \
-	  echo "    packages must be built natively, see packaging.mk"  >&2; \
-	  file $(BUILD_DIR)/bin/$(RECORDER_BIN) >&2; \
-	  exit 1; }
+	@readelf -h $< | grep -q '$(ELF_MACHINE)' \
+	  || { echo "*** error: $< is not $(ELF_MACHINE), packages must be built natively" >&2; exit 1; }
 
 # -----------------------------------------------------------------------
 # Staging area.
