@@ -146,40 +146,28 @@ jobs:
           if-no-files-found: error
 
   test-packages:
-    name: Test ${{ matrix.format }} on ${{ matrix.arch }}
+    name: Test ${{ matrix.image }} on ${{ matrix.arch }}
     needs: [package-linux]
     runs-on: ${{ matrix.runner }}
     strategy:
       fail-fast: false
       matrix:
         include:
-          - { arch: amd64, runner: ubuntu-24.04,     format: deb, image: 'debian:trixie' }
-          - { arch: amd64, runner: ubuntu-24.04,     format: rpm, image: 'fedora:43' }
-          - { arch: arm64, runner: ubuntu-24.04-arm, format: deb, image: 'debian:trixie' }
-          - { arch: arm64, runner: ubuntu-24.04-arm, format: rpm, image: 'fedora:43' }
+          - { arch: amd64, runner: ubuntu-24.04, image: 'debian:trixie' }
+          - { arch: amd64, runner: ubuntu-24.04, image: 'fedora:43' }
+          - { arch: arm64, runner: ubuntu-24.04-arm, image: 'debian:trixie' }
+          - { arch: arm64, runner: ubuntu-24.04-arm, image: 'fedora:43' }
     steps:
+      - uses: actions/checkout@v5
       - uses: actions/download-artifact@v4
         with:
           name: packages-linux-${{ matrix.arch }}
       - name: Install in a clean container
         run: |
-          set -eux
-          docker run --rm -v "$PWD:/pkg" -w /pkg '${{ matrix.image }}' sh -eux -c '
-            if [ "${{ matrix.format }}" = deb ]; then
-              apt-get update && apt-get install -y ./*.deb
-            else
-              dnf install -y ./*.rpm
-            fi
-            command -v feeze
-            command -v feeze_recorder
-            # Swing needs a display, so assert only that the preflight checks in
-            # bin/feeze pass - that covers the JDK 25 and libgc dependencies.
-            feeze >/tmp/out 2>&1 || true
-            echo "----- feeze output -----"; cat /tmp/out; echo "------------------------"
-            rpm -q java-25-openjdk gc elfutils-libelf zlib || true
-            java -version 2>&1 || echo "java not on PATH"
-            ! grep -qE "not found in .PATH|must be at least 25|libgc.so not installed" /tmp/out
-          '
+          docker run --rm \
+            -v "$PWD:/pkg" \
+            -v "$PWD/.github/actions/test-package/test-package.sh:/test-package.sh:ro" \
+            -w /pkg '${{ matrix.image }}' sh /test-package.sh
 
   release:
     name: Publish release
