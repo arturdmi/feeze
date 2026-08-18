@@ -21,7 +21,6 @@
 #
 #  This is the Makefile for building feeze packages.
 #
-#
 # -----------------------------------------------------------------------
 
 PKG_NAME       := feeze

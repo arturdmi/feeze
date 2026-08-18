@@ -21,7 +21,6 @@
 #
 #  This is the rpm spec template used by packaging.mk
 #
-#
 # -----------------------------------------------------------------------
 #
 # Nothing is compiled here: %install only copies the tree that packaging.mk

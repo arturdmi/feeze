@@ -23,7 +23,6 @@
 #  This installs the toolchain needed to build and package feeze on a
 #  GitHub Actions runner
 #
-#
 # -----------------------------------------------------------------------
 sudo apt-get update
 sudo apt-get install openjdk-25-jdk-headless libgc1 libgc-dev

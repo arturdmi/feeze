@@ -22,7 +22,6 @@
 #  This is the GitHub Actions workflow building feeze packages for
 #  linux/amd64 and linux/arm64
 #
-#
 # -----------------------------------------------------------------------
 
 name: Build feeze packages

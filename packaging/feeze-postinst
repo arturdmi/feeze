@@ -22,7 +22,6 @@
 #
 #  This is the shared post-install hook used by both the deb and the rpm
 #
-#
 # -----------------------------------------------------------------------
 # Shared post-install hook, invoked from DEBIAN/postinst and from %post in the
 # spec so that deb and rpm cannot drift apart.
