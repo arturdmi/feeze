@@ -145,6 +145,10 @@ The following key-combination may be used as shortcuts:
 
 * <kbd>Alt</kbd>+<kbd>D</kbd> for `show data` button
 
+* <kbd>Ctrl</kbd>+<kbd>W</kbd> close window and quit feeze GUI
+
+* <kbd>Ctrl</kbd>+<kbd>Q</kbd> quit feeze GUI
+
 ## Scheduling Data Window
 
 The scheduling data window looks like this:
@@ -312,7 +316,7 @@ The following key-combination may be used as shortcuts:
 
 * <kbd>Ctrl</kbd>+<kbd>W</kbd> close window
 
-* <kbd>Ctrl</kbd>+<kbd>Q</kbd> quite feeze GUI
+* <kbd>Ctrl</kbd>+<kbd>Q</kbd> quit feeze GUI
 
 Have fun!
 

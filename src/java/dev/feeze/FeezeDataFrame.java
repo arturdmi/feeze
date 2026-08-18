@@ -95,7 +95,8 @@ public class FeezeDataFrame extends JFrame
             }
           });
         setFocusable(true);
-        addKeyListener(new KeyListener()
+
+        var kl = new KeyListener()
           {
             @Override public void keyPressed(KeyEvent key) { }
             @Override public void keyReleased(KeyEvent key) { }
@@ -113,7 +114,12 @@ public class FeezeDataFrame extends JFrame
                   System.out.println("typed: "+key.getKeyCode()+" "+key.getExtendedKeyCode()+" "+key.getKeyChar()+" "+((int)key.getKeyChar())+" w:"+('w'-0x90));
                 }
             }
-          });
+          };
+        addKeyListener(kl);
+        b1.addKeyListener(kl);
+        b2.addKeyListener(kl);
+        b3.addKeyListener(kl);
+        b4.addKeyListener(kl);
 
         setVisible(true);
         var ignore = Feeze._openDataFrames_.incrementAndGet();

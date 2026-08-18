@@ -341,7 +341,8 @@ public class ControlFrame extends JFrame
             }
           });
         setFocusable(true);
-        addKeyListener(new KeyListener()
+
+        var kl = new KeyListener()
           {
             @Override public void keyPressed(KeyEvent key) { }
             @Override public void keyReleased(KeyEvent key) { }
@@ -359,7 +360,16 @@ public class ControlFrame extends JFrame
                   System.out.println("typed: "+key.getKeyCode()+" "+key.getExtendedKeyCode()+" "+key.getKeyChar()+" "+((int)key.getKeyChar())+" w:"+('w'-0x90));
                 }
             }
-          });
+          };
+        addKeyListener(kl);
+        _startRecorder.addKeyListener(kl);
+        _record.addKeyListener(kl);
+        _showData.addKeyListener(kl);
+        _fuzionHomeDir.addKeyListener(kl);
+        _sharedMemName.addKeyListener(kl);
+        _sharedMemSize.addKeyListener(kl);
+        _recorderOutput.addKeyListener(kl);
+
         setVisible(true);
 
         var _listener = new ControlListener(this);
