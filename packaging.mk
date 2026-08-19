@@ -111,7 +111,7 @@ $(PKG_TARDIR).tar.gz: pkg-stage
 # -----------------------------------------------------------------------
 # Debian package build (.deb) using raw dpkg-deb.
 # -----------------------------------------------------------------------
-$$(PKG_DEB_FILE): pkg-stage $(FEEZE_REPO)/packaging/feeze-postinst
+$(PKG_DEB_FILE): pkg-stage $(FEEZE_REPO)/packaging/feeze-postinst
 	rm -rf $(PKG_DIR)/deb $(PKG_DEB_FILE)
 	mkdir -p $(PKG_DIR)/deb/DEBIAN
 	cp -a $(PKG_ROOT)/. $(PKG_DIR)/deb/
