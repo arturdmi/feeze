@@ -27,6 +27,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 package dev.feeze;
 
+import java.awt.HeadlessException;
+
 import java.io.File;
 import java.io.IOException;
 
@@ -92,7 +94,15 @@ public class Feeze extends ANY implements Offsets
   public static void main(String[] args)
   {
     installIcon();
-    var c = new ControlFrame();
+    try
+      {
+        var c = new ControlFrame();
+      }
+    catch (HeadlessException he)
+      {
+        System.err.println(he);
+        System.exit(1);
+      }
   }
 
   static void showData(String shMemFileName)
