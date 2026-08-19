@@ -181,12 +181,13 @@ jobs:
             echo "latest=false"          >>"$GITHUB_OUTPUT"
           fi
 
-      - uses: softprops/action-gh-release@v3
+      - name: Publish release
+        uses: ncipollo/release-action@339a81892b84b4eeb0f6e744e4574d79d0d9b8dd
         with:
-          tag_name: ${{ steps.tag.outputs.name }}
+          tag: ${{ steps.tag.outputs.name }}
           name: ${{ steps.tag.outputs.name == 'snapshot' && format('snapshot {0} ({1})', needs.facts.outputs.version, github.sha) || steps.tag.outputs.name }}
           prerelease: ${{ steps.tag.outputs.pre }}
-          make_latest: ${{ steps.tag.outputs.latest }}
-          files: artifacts/*
-          draft: false
-          generate_release_notes: true
+          makeLatest: ${{ steps.tag.outputs.latest }}
+          artifacts: artifacts/*
+          generateReleaseNotes: false
+          token: ${{ secrets.GITHUB_TOKEN }}
