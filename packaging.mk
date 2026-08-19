@@ -82,8 +82,6 @@ pkg-stage: pkg-check-arch $(PKG_BINARIES) $(FEEZE_REPO)/packaging/feeze.desktop
 	install -m 755 $(BUILD_DIR)/bin/feeze_desktop $(PKG_SHARE)/bin/feeze_desktop
 	install -m 755 $(BUILD_DIR)/bin/$(RECORDER_BIN) $(PKG_SHARE)/bin/$(RECORDER_BIN)
 
-	install -m 755 $(FEEZE_REPO)/packaging/feeze-postinst $(PKG_SHARE)/bin/feeze-postinst
-
 	cp -a $(BUILD_CLASSES) $(PKG_SHARE)/classes
 	install -m 644 $(BUILD_DIR)/feeze.jmod $(PKG_SHARE)/feeze.jmod
 	install -m 644 $(BUILD_DIR)/icon.svg   $(PKG_SHARE)/icon.svg
@@ -113,7 +111,7 @@ $(PKG_TARDIR).tar.gz: pkg-stage
 # -----------------------------------------------------------------------
 # Debian package build (.deb) using raw dpkg-deb.
 # -----------------------------------------------------------------------
-$(PKG_DEB_FILE): pkg-stage
+$$(PKG_DEB_FILE): pkg-stage $(FEEZE_REPO)/packaging/feeze-postinst
 	rm -rf $(PKG_DIR)/deb $(PKG_DEB_FILE)
 	mkdir -p $(PKG_DIR)/deb/DEBIAN
 	cp -a $(PKG_ROOT)/. $(PKG_DIR)/deb/
@@ -128,9 +126,7 @@ $(PKG_DEB_FILE): pkg-stage
 	    -e 's|@HOMEPAGE@|$(PKG_HOMEPAGE)|g'                          \
 	    -e "s|@SIZE@|$$(du -ks $(PKG_DIR)/deb | cut -f1)|g"          \
 	    $(FEEZE_REPO)/packaging/control.in >$(PKG_DIR)/deb/DEBIAN/control
-		printf '#!/bin/sh\nset -e\n$(PKG_PREFIX)/bin/feeze-postinst\nexit 0\n' \
-	    >$(PKG_DIR)/deb/DEBIAN/postinst
-	chmod 755 $(PKG_DIR)/deb/DEBIAN/postinst
+		install -m 755 $(FEEZE_REPO)/packaging/feeze-postinst $(PKG_DIR)/deb/DEBIAN/postinst
 	dpkg-deb --root-owner-group -Zzstd --build $(PKG_DIR)/deb $(PKG_DEB_FILE)
 	@echo " + $(PKG_DEB_FILE)"
 
@@ -151,7 +147,6 @@ $(PKG_RPM_FILE): pkg-stage
 	    -e 's|@HOMEPAGE@|$(PKG_HOMEPAGE)|g'     \
 		-e 's|@PREFIX@|$(PKG_PREFIX)|g'         \
 	    $(FEEZE_REPO)/packaging/feeze.spec.in >$(PKG_DIR)/rpm/SPECS/$(PKG_NAME).spec
-
 	rpmbuild -bb                                              \
 	  --define "_topdir $(abspath $(PKG_DIR)/rpm)"            \
 	  --define "pkgroot $(abspath $(PKG_ROOT))"               \

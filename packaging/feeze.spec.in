@@ -58,8 +58,8 @@ per-thread run, ready and blocked state on a microsecond time axis, including
 wakeup arrows between threads.
 
 Recording requires a kernel with BTF support (/sys/kernel/btf/vmlinux) and the
-CAP_BPF and CAP_PERFMON capabilities. The package grants these to the recorder
-via setcap where available; otherwise run feeze_recorder as root.
+CAP_BPF and CAP_PERFMON capabilities, which the package grants to the recorder
+on installation. If that fails, run feeze_recorder as root.
 
 %prep
 # nothing to do, the tree is pre-staged
@@ -73,7 +73,12 @@ mkdir -p %{buildroot}
 cp -a %{pkgroot}/. %{buildroot}/
 
 %post
-@PREFIX@/bin/feeze-postinst || :
+setcap cap_bpf,cap_perfmon,cap_sys_resource+ep @PREFIX@/bin/feeze_recorder \
+  || echo "feeze: could not set capabilities, run the recorder as root" >&2
+command -v update-desktop-database >/dev/null 2>&1 && \
+  update-desktop-database -q /usr/share/applications || :
+command -v gtk-update-icon-cache >/dev/null 2>&1 && \
+  gtk-update-icon-cache -q -t -f /usr/share/icons/hicolor || :
 
 %postun
 if [ $1 -eq 0 ] ; then
