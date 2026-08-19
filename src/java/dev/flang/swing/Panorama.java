@@ -401,7 +401,10 @@ public abstract class Panorama extends JPanel
   public JScrollPane scroller(int w, int h)
   {
     var res = new JScrollPane(this);
-    res.setPreferredSize(new Dimension(w, h));
+    if (w > 0 && h > 0)
+      {
+        res.setPreferredSize(new Dimension(w, h));
+      }
 
     // increment used for arrow buttons and mouse wheel.
     //
