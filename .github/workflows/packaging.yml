@@ -46,7 +46,8 @@ jobs:
       release-kind: ${{ steps.f.outputs.release-kind }}
     steps:
       - uses: actions/checkout@v5
-      - id: f
+      - name: Determine version and release kind
+        id: f
         run: |
           set -eu
           # If this is a tag launch, the version is taken from the tag name,
@@ -163,7 +164,8 @@ jobs:
               || { echo "::error::missing artifact matching $p"; exit 1; }
           done
 
-      - id: tag
+      - name: Choose tag name
+        id: tag
         run: |
           set -eu
           if [ "$GITHUB_REF_TYPE" = tag ]; then
