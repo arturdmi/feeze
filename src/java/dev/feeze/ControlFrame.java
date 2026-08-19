@@ -172,10 +172,16 @@ public class ControlFrame extends JFrame
         _usedMemBar.setValue(0);
         _usedMemBar.setStringPainted(true);
 
-        _startRecorder = button("start local recorder", KeyEvent.VK_S, "start local recording service, requires superuser status");
-        _record = button("record", KeyEvent.VK_R, "start local recording service, requires superuser status");
-        _record.setEnabled(false);
-        _showData = button("show data", KeyEvent.VK_D, "show recorded data");
+        _startRecorder = button("start local recorder", KeyEvent.VK_S, null);
+        _record        = button("record"              , KeyEvent.VK_R, null); _record.setEnabled(false);
+        _showData      = button("show data"           , KeyEvent.VK_D, null);
+
+        _fuzionHomeDir.setToolTipText(Texts.FUZION_HOME_TOOLTIP);
+        _sharedMemName.setToolTipText(Texts.SHARED_MEM_NAME_TOOLTIP);
+        _sharedMemSize.setToolTipText(Texts.SHARED_MEM_SIZE_TOOLTIP);
+        _startRecorder.setToolTipText(Texts.START_LOCAL_RECORDER_TOOLTIP);
+        _record       .setToolTipText(Texts.RECORD_TOOLTIP);
+        _showData     .setToolTipText(Texts.SHOW_TOOLTIP);
 
         if (!Feeze.sharedMemExists(_sharedMemName.getText()))
           {

@@ -28,6 +28,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 package dev.feeze;
 
 import java.awt.Color;
+import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.FontMetrics;
@@ -1536,9 +1537,13 @@ class SchedulingPanorama extends Panorama
 
                 if (_threadShown[i])
                   {
-                    int NAME_DIST_X = 384;
+                    int NAME_DIST_X = 384;  // hard-code minimum pixel distance between thread names
+
+                    // try to find corresponding ns-distance by doubling starting at 1ns
                     long NAME_DIST_NS = 1;
-                    while (compress_x(NAME_DIST_NS) < NAME_DIST_X)
+                    while (compress_x(NAME_DIST_NS) < NAME_DIST_X &&
+                           // if scale factor is very low, we might overflow, so stop in that case
+                           NAME_DIST_NS < Long.MAX_VALUE - NAME_DIST_NS)
                       {
                         NAME_DIST_NS += NAME_DIST_NS;
                       }
@@ -1653,14 +1658,24 @@ class SchedulingPanorama extends Panorama
         _zoom.drawLine(g,1,x, y,
                        x,
                        y + (below ? 1 : -1) * zoom(longer ? 10 : 5));
-        if (((timens / grade) % 10) == 0)
+        if (((timens / grade) % 10) == 0 &&  // draw labels every tenth line
+            grade < Long.MAX_VALUE/10        // unless zoom factor is so small that our grade overflows
+            )
           {
             drawScaleLabel(g,timens,grade*10,x,y, below);
           }
-        timens += grade;
-        x = nanos_to_posx(timens);
+        if (timens < Long.MAX_VALUE - grade) // make sure there is no overflow
+          {
+            timens += grade;                 // next scale line time
+            x = nanos_to_posx(timens);       // next scale line position
+          }
+        else
+          {
+            x = x1;  // overflow, so exit loop and stop drawing
+          }
       }
   }
+
 
   /**
    * Draw label for the scale
@@ -1719,70 +1734,80 @@ class SchedulingPanorama extends Panorama
   }
 
   /**
-   * Component to draw scala as top ruler.
+   * Component with a resize button
    */
-  public class Scala extends JComponent
+  public abstract class WithResizeButton extends JComponent
   {
-
     /**
-     * Are we currently dragging, i.e., changing the height of this component?
+     * Cursor to use when mouse is over resize button
      */
-    boolean _dragging = false;
+    abstract Cursor resizeCursor();
 
     /**
-     * During _dragging, the last y position of the mouse that was processed to
-     * change the height.
+     * resize button is the area where you can grab the line and move it around.
      */
-    int _dragY = 0;
-
-    int _preferredHeight;
-
-    /**
-     * Minimun height of Scale area, used to make sure it does not
-     * accidentally disappear when dragging.
-     */
-    int MIN_SCALA_HEIGHT() { return (int) (4*gapEighth()); }
-
-    /**
-     * Drag area is the area where you can grab the line and move it around.
-     */
-    int dragAreaWidth        () { return (int) (16*gapEighth()); }
-    int dragAreaHeight       () { return (int) (4*gapEighth()); }
-    int dragAreaX            () { return (int) (getVisibleRect().x + getVisibleRect().width  - 24*gapEighth()); }
-    int dragAreaY            () { return (int) (getVisibleRect().y + getVisibleRect().height - dragAreaHeight()); }
+    abstract int resizeButtonWidth ();
+    abstract int resizeButtonHeight();
+    abstract int resizeButtonX     ();
+    abstract int resizeButtonY     ();
 
 
     /**
-     * Are the given relative (to Scala) coordinates within the drag
+     * Are the given relative (to WithResizeButton) coordinates within the resize
      * button?
      */
-    boolean inDragArea(int x, int y)
+    boolean inResizeButton(int x, int y)
     {
+      var ex = x;
+      var ey = y;
       return
-        dragAreaX() <= x && x < dragAreaX() + dragAreaWidth() &&
-        dragAreaY() <= y && y < dragAreaY() + dragAreaHeight();
+        resizeButtonX() <= ex && ex < resizeButtonX() + resizeButtonWidth() &&
+        resizeButtonY() <= ey && ey < resizeButtonY() + resizeButtonHeight();
     }
 
 
-    public Scala()
+    /**
+     * mouseClicked action, to be redefined if needed.
+     */
+    void mouseClicked(MouseEvent e)
     {
-      setPreferredSize(new Dimension(1, _zoom.STANDARD_FONT_SIZE*7/8*5+16));
+    }
+
+
+    private boolean _inResizeButton = false;
+
+
+    /**
+     * Are we currently resizing, i.e., changing the width of this component?
+     */
+    boolean _resizing = false;
+
+    /**
+     * During _resizing, the last x/y position of the mouse that was processed to
+     * change the width.
+     */
+    int _resizeX = 0;
+    int _resizeY = 0;
+
+    {
+      setPreferredSize(new Dimension(1, 1));
       addMouseListener(new MouseListener()
         {
 
           @Override
           public void mouseReleased(MouseEvent e)
           {
-            if (e.getComponent() == Scala.this &&
+            if (e.getComponent() == WithResizeButton.this &&
                 SwingUtilities.isLeftMouseButton(e))
               {
-                _dragging = false;
+                _resizing = false;
               }
           }
 
           @Override
           public void mouseClicked(MouseEvent e)
           {
+            WithResizeButton.this.mouseClicked(e);
           }
 
           @Override
@@ -1798,15 +1823,16 @@ class SchedulingPanorama extends Panorama
           @Override
           public void mousePressed(MouseEvent e)
           {
-            if (e.getComponent() == Scala.this &&
+            if (e.getComponent() == WithResizeButton.this &&
                 SwingUtilities.isLeftMouseButton(e))
               {
                 var x = e.getX();
                 var y = e.getY();
-                if (inDragArea(x, y))
+                if (inResizeButton(x, y))
                   {
-                    _dragY = y;
-                    _dragging = true;
+                    _resizeX = x;
+                    _resizeY = y;
+                    _resizing = true;
                   }
               }
           }
@@ -1818,31 +1844,90 @@ class SchedulingPanorama extends Panorama
           @Override
           public void mouseMoved(MouseEvent e)
           {
+            if (e.getComponent() == WithResizeButton.this)
+              {
+                var x = e.getX();
+                var y = e.getY();
+                var inResizeButton = inResizeButton(x,y);
+                if (inResizeButton != _inResizeButton && !_draggingDataArea)
+                  {
+                    _inResizeButton = inResizeButton;
+                    setCursor(inResizeButton ? resizeCursor()
+                                             : Cursor.getDefaultCursor());
+                  }
+              }
           }
 
           @Override
           public void mouseDragged(MouseEvent e)
           {
-            if (e.getComponent() == Scala.this &&
+            if (e.getComponent() == WithResizeButton.this &&
                 SwingUtilities.isLeftMouseButton(e) &&
-                _dragging)
+                _resizing)
               {
-                var dy = e.getY() - _dragY;
-                if (dy != 0)
+                var dx = e.getX() - _resizeX;
+                var dy = e.getY() - _resizeY;
+                if (dx != 0 || dy != 0)
                   {
+                    if (dx > 0)
+                      {
+                        dx = Math.min(dx, SchedulingPanorama.this.getVisibleRect().width - MIN_PANORAMA_WIDTH());
+                      }
                     if (dy > 0)
                       {
                         dy = Math.min(dy, SchedulingPanorama.this.getVisibleRect().height - MIN_PANORAMA_HEIGHT());
                       }
-                    changeHeight(dy);
-                    _dragY += dy;
+                    _resizeX += dx;
+                    _resizeY += dy;
+                    if (e.getComponent() != _topRuler)
+                      {
+                        _leftRuler.changeWidth( dx);
+                      }
+                    if (e.getComponent() != _leftRuler)
+                      {
+                        _topRuler .changeHeight(dy);
+                      }
                   }
               }
           }
 
         });
+
     }
 
+  }
+
+
+  /**
+   * Component to draw scala as top ruler.
+   */
+  public class Scala extends WithResizeButton
+  {
+
+    int _preferredHeight;
+
+    /**
+     * Minimun height of Scale area, used to make sure it does not
+     * accidentally disappear when resizing.
+     */
+    int MIN_SCALA_HEIGHT() { return (int) (4*gapEighth()); }
+
+    /**
+     * Cursor to use when mouse is over resize button
+     */
+    Cursor resizeCursor() { return Cursor.getPredefinedCursor(Cursor.N_RESIZE_CURSOR); };
+
+    /**
+     * resize button is the area where you can grab the line and move it around.
+     */
+    int resizeButtonWidth () { return (int) (16*gapEighth()); }
+    int resizeButtonHeight() { return (int) (4*gapEighth()); }
+    int resizeButtonX     () { return (int) (getVisibleRect().x + getVisibleRect().width  - 24*gapEighth()); }
+    int resizeButtonY     () { return (int) (getVisibleRect().y + getVisibleRect().height - resizeButtonHeight()); }
+
+    {
+      setPreferredSize(new Dimension(1, _zoom.STANDARD_FONT_SIZE*7/8*5+16));
+    }
 
     void changeHeight(int dy)
     {
@@ -1863,10 +1948,10 @@ class SchedulingPanorama extends Panorama
                                         false);
 
       _zoom.drawFilledRect(g,Color.gray, Color.white, 1,
-                           dragAreaX(),
-                           dragAreaY(),
-                           dragAreaWidth(),
-                           dragAreaHeight());
+                           resizeButtonX(),
+                           resizeButtonY(),
+                           resizeButtonWidth(),
+                           resizeButtonHeight());
     }
   }
 
@@ -1889,167 +1974,72 @@ class SchedulingPanorama extends Panorama
   /**
    * Component to draw thread names as left ruler.
    */
-  public class ThreadNames extends JComponent
+  public class ThreadNames extends WithResizeButton
   {
 
     /**
-     * Are we currently dragging, i.e., changing the width of this component?
-     */
-    boolean _dragging = false;
-
-    /**
-     * During _dragging, the last x position of the mouse that was processed to
-     * change the width.
-     */
-    int _dragX = 0;
-
-    int _preferredWidth;
-
-    /**
      * Minimun width of ThreadNames area, used to make sure it does not
-     * accidentally disappear when dragging.
+     * accidentally disappear when resizing.
      */
     int MIN_THREADNAMES_WIDTH() { return (int) (4*gapEighth()); }
 
     /**
-     * Drag area is the area where you can grab the line and move it around.
+     * Cursor to use when mouse is over resize button
      */
-    int dragAreaWidth        () { return (int) (4*gapEighth()); }
-    int dragAreaHeight       () { return (int) (16*gapEighth()); }
-    int dragAreaX            () { return (int) (getVisibleRect().x + getVisibleRect().width  - dragAreaWidth()); }
-    int dragAreaY            () { return (int) (getVisibleRect().y + getVisibleRect().height - 24*gapEighth() ); }
-
+    Cursor resizeCursor() { return Cursor.getPredefinedCursor(Cursor.E_RESIZE_CURSOR); };
 
     /**
-     * Are the given relative (to ThreadNames) coordinates within the drag
-     * button?
+     * resize button is the area where you can grab the line and move it around.
      */
-    boolean inDragArea(int x, int y)
+    int resizeButtonWidth () { return (int) (4*gapEighth()); }
+    int resizeButtonHeight() { return (int) (16*gapEighth()); }
+    int resizeButtonX     () { return (int) (getVisibleRect().x + getVisibleRect().width  - resizeButtonWidth()); }
+    int resizeButtonY     () { return (int) (getVisibleRect().y + getVisibleRect().height - 24*gapEighth() ); }
+
     {
-      return
-        dragAreaX() <= x && x < dragAreaX() + dragAreaWidth() &&
-        dragAreaY() <= y && y < dragAreaY() + dragAreaHeight();
+      setPreferredSize(new Dimension(_zoom.STANDARD_FONT_SIZE*10, 1));
     }
 
-
-    /**
-     * Constructor
-     */
-    public ThreadNames()
+    @Override
+    void mouseClicked(MouseEvent e)
     {
-      _preferredWidth  = _zoom.STANDARD_FONT_SIZE*10;
-      setPreferredSize(new Dimension(_preferredWidth, 1));
-      addMouseListener(new MouseListener()
+      var x = e.getX();
+      var y = e.getY();
+      var c = e.getComponent();
+      if (x >= 0 && x < c.getWidth() &&
+          y >= 0 && y < c.getHeight() &&
+          !inResizeButton(x, y))
         {
-
-          @Override
-          public void mouseReleased(MouseEvent e)
-          {
-            if (e.getComponent() == ThreadNames.this &&
-                SwingUtilities.isLeftMouseButton(e))
-              {
-                _dragging = false;
-              }
-          }
-
-          @Override
-          public void mouseClicked(MouseEvent e)
-          {
-            var x = e.getX();
-            var y = e.getY();
-            var c = e.getComponent();
-            if (x >= 0 && x < c.getWidth() &&
-                y >= 0 && y < c.getHeight() &&
-                !inDragArea(x, y))
-              {
-                if (y >= cpusY() && y < cpusYHeaderBottom())
-                  {
-                    synchronized (SchedulingPanorama.this)
-                      {
-                        _cpusEnabled = !_cpusEnabled;
-                        _threads = null;
-                      }
-                    c.repaint();
-                    SchedulingPanorama.this.repaint();
-                  }
-                else
-                  {
-                    var ti = threadAt(y);
-                    var u = thread(ti).user();
-                    if (ti >= 0 &&
-                        ti <= numThreads()      &&
-                        isFirstThreadOfUser(ti) &&
-                        y >= threadYUserTop(ti) &&
-                        y < threadYUserBot(ti)     )
-                      {
-                        synchronized (SchedulingPanorama.this)
-                          {
-                            _usersEnabled[u._num] = !_usersEnabled[u._num];
-                            _threads = null;
-                          }
-                        c.repaint();
-                        SchedulingPanorama.this.repaint();
-                      }
-                  }
-              }
-          }
-
-          @Override
-          public void mouseEntered(MouseEvent e)
-          {
-          }
-
-          @Override
-          public void mouseExited(MouseEvent e)
-          {
-          }
-
-          @Override
-          public void mousePressed(MouseEvent e)
-          {
-            if (e.getComponent() == ThreadNames.this &&
-                SwingUtilities.isLeftMouseButton(e))
-              {
-                var x = e.getX();
-                var y = e.getY();
-                if (inDragArea(x, y))
-                  {
-                    _dragX = x;
-                    _dragging = true;
-                  }
-              }
-          }
-
-        });
-      addMouseMotionListener(new MouseMotionListener()
-        {
-
-          @Override
-          public void mouseMoved(MouseEvent e)
-          {
-          }
-
-          @Override
-          public void mouseDragged(MouseEvent e)
-          {
-            if (e.getComponent() == ThreadNames.this &&
-                SwingUtilities.isLeftMouseButton(e) &&
-                _dragging)
-              {
-                var dx = e.getX() - _dragX;
-                if (dx != 0)
-                  {
-                    if (dx > 0)
-                      {
-                        dx = Math.min(dx, SchedulingPanorama.this.getVisibleRect().width - MIN_PANORAMA_WIDTH());
-                      }
-                    changeWidth(dx);
-                    _dragX += dx;
-                  }
-              }
-          }
-
-        });
+          if (y >= cpusY() && y < cpusYHeaderBottom())
+            {
+              synchronized (SchedulingPanorama.this)
+                {
+                  _cpusEnabled = !_cpusEnabled;
+                  _threads = null;
+                }
+              c.repaint();
+              SchedulingPanorama.this.repaint();
+            }
+          else
+            {
+              var ti = threadAt(y);
+              var u = thread(ti).user();
+              if (ti >= 0 &&
+                  ti <= numThreads()      &&
+                  isFirstThreadOfUser(ti) &&
+                  y >= threadYUserTop(ti) &&
+                  y < threadYUserBot(ti)     )
+                {
+                  synchronized (SchedulingPanorama.this)
+                    {
+                      _usersEnabled[u._num] = !_usersEnabled[u._num];
+                      _threads = null;
+                    }
+                  c.repaint();
+                  SchedulingPanorama.this.repaint();
+                }
+            }
+        }
     }
 
     void changeWidth(int dx)
@@ -2173,10 +2163,10 @@ class SchedulingPanorama extends Panorama
                      getWidth()-1, 0,
                      getWidth()-1, getHeight()-1);
       _zoom.drawFilledRect(g,Color.gray, Color.white, 1,
-                           dragAreaX(),
-                           dragAreaY(),
-                           dragAreaWidth(),
-                           dragAreaHeight());
+                           resizeButtonX(),
+                           resizeButtonY(),
+                           resizeButtonWidth(),
+                           resizeButtonHeight());
     }
   }
 
@@ -2218,144 +2208,47 @@ class SchedulingPanorama extends Panorama
   /**
    * top left corner
    */
-  JComponent _topLeft = new JComponent()
+  JComponent _topLeft = new TopLeft();
+
+
+  @Override
+  public JComponent topLeft()
   {
-    JComponent me = this;
+    return _topLeft;
+  }
 
-    /**
-     * Are we currently dragging, i.e., changing the width of this component?
-     */
-    boolean _dragging = false;
 
-    /**
-     * During _dragging, the last x/y position of the mouse that was processed to
-     * change the width.
-     */
-    int _dragX = 0;
-    int _dragY = 0;
-
+  /**
+   * Component to draw top left area
+   */
+  class TopLeft extends WithResizeButton
+  {
 
     /**
      * Minimun width of topLeft area, used to make sure it does not accidentally
-     * disappear when dragging.
+     * disappear when resizing.
      */
     int MIN_WIDTH() { return (int) (8*gapEighth()); }
 
     /**
      * Minimun height of topLeft area, used to make sure it does not accidentally
-     * disappear when dragging.
+     * disappear when resizing.
      */
     int MIN_HEIGHT() { return (int) (8*gapEighth()); }
 
+    /**
+     * Cursor to use when mouse is over resize button
+     */
+    Cursor resizeCursor() { return Cursor.getPredefinedCursor(Cursor.NW_RESIZE_CURSOR); };
 
     /**
-     * Drag area is the area where you can grab the line and move it around.
+     * resize button is the area where you can grab the line and move it around.
      */
-    int dragAreaWidth        () { return (int) (8*gapEighth()); }
-    int dragAreaHeight       () { return (int) (8*gapEighth()); }
-    int dragAreaX            () { return (int) (getWidth()  - dragAreaWidth() ); }
-    int dragAreaY            () { return (int) (getHeight() - dragAreaHeight()); }
+    int resizeButtonWidth () { return (int) (8*gapEighth()); }
+    int resizeButtonHeight() { return (int) (8*gapEighth()); }
+    int resizeButtonX     () { return (int) (getWidth()  - resizeButtonWidth() ); }
+    int resizeButtonY     () { return (int) (getHeight() - resizeButtonHeight()); }
 
-
-    /**
-     * Are the given relative (to ThreadNames) coordinates within the drag
-     * button?
-     */
-    boolean inDragArea(int x, int y)
-    {
-      var ex = x;
-      var ey = y;
-      return
-        dragAreaX() <= ex && ex < dragAreaX() + dragAreaWidth() &&
-        dragAreaY() <= ey && ey < dragAreaY() + dragAreaHeight();
-    }
-
-
-    {
-      setPreferredSize(new Dimension(1, 1));
-      addMouseListener(new MouseListener()
-        {
-
-          @Override
-          public void mouseReleased(MouseEvent e)
-          {
-            if (e.getComponent() == me &&
-                SwingUtilities.isLeftMouseButton(e))
-              {
-                _dragging = false;
-              }
-          }
-
-          @Override
-          public void mouseClicked(MouseEvent e)
-          {
-          }
-
-          @Override
-          public void mouseEntered(MouseEvent e)
-          {
-          }
-
-          @Override
-          public void mouseExited(MouseEvent e)
-          {
-          }
-
-          @Override
-          public void mousePressed(MouseEvent e)
-          {
-            if (e.getComponent() == me &&
-                SwingUtilities.isLeftMouseButton(e))
-              {
-                var x = e.getX();
-                var y = e.getY();
-                if (inDragArea(x, y))
-                  {
-                    _dragX = x;
-                    _dragY = y;
-                    _dragging = true;
-                  }
-              }
-          }
-
-        });
-      addMouseMotionListener(new MouseMotionListener()
-        {
-
-          @Override
-          public void mouseMoved(MouseEvent e)
-          {
-          }
-
-          @Override
-          public void mouseDragged(MouseEvent e)
-          {
-            if (e.getComponent() == me &&
-                SwingUtilities.isLeftMouseButton(e) &&
-                _dragging)
-              {
-                var dx = e.getX() - _dragX;
-                var dy = e.getY() - _dragY;
-                if (dx != 0 || dy != 0)
-                  {
-                    if (dx > 0)
-                      {
-                        dx = Math.min(dx, SchedulingPanorama.this.getVisibleRect().width - MIN_PANORAMA_WIDTH());
-                      }
-                    if (dy > 0)
-                      {
-                        dy = Math.min(dy, SchedulingPanorama.this.getVisibleRect().height - MIN_PANORAMA_HEIGHT());
-                      }
-                    _dragX += dx;
-                    _dragY += dy;
-                    _leftRuler.changeWidth( dx);
-                    _topRuler .changeHeight(dy);
-                  }
-              }
-          }
-
-        });
-    }
 
     protected void paintComponent(Graphics g)
     {
@@ -2370,35 +2263,28 @@ class SchedulingPanorama extends Panorama
                      v.x+v.width-1, v.y,
                      v.x+v.width-1, v.y+v.height-1);
       _zoom.drawFilledRect(g,Color.gray, Color.white, 1,
-                           dragAreaX(),
-                           dragAreaY(),
-                           dragAreaWidth(),
-                           dragAreaHeight());
+                           resizeButtonX(),
+                           resizeButtonY(),
+                           resizeButtonWidth(),
+                           resizeButtonHeight());
       g.setColor(Color.gray);
       _zoom.drawLine(g, 1,
-                     (int) (dragAreaX()+                  2*gapEighth()), (int) (dragAreaY()+                  2*gapEighth()),
-                     (int) (dragAreaX()+                  4*gapEighth()), (int) (dragAreaY()+                  2*gapEighth()));
+                     (int) (resizeButtonX()+                      2*gapEighth()), (int) (resizeButtonY()+                       2*gapEighth()),
+                     (int) (resizeButtonX()+                      4*gapEighth()), (int) (resizeButtonY()+                       2*gapEighth()));
       _zoom.drawLine(g, 1,
-                     (int) (dragAreaX()+                  2*gapEighth()), (int) (dragAreaY()+                  2*gapEighth()),
-                     (int) (dragAreaX()+                  2*gapEighth()), (int) (dragAreaY()+                  4*gapEighth()));
+                     (int) (resizeButtonX()+                      2*gapEighth()), (int) (resizeButtonY()+                       2*gapEighth()),
+                     (int) (resizeButtonX()+                      2*gapEighth()), (int) (resizeButtonY()+                       4*gapEighth()));
       _zoom.drawLine(g, 1,
-                     (int) (dragAreaX()+dragAreaWidth()-1-2*gapEighth()), (int) (dragAreaY()+dragAreaHeight()-1-2*gapEighth()),
-                     (int) (dragAreaX()+dragAreaWidth()-1-4*gapEighth()), (int) (dragAreaY()+dragAreaHeight()-1-2*gapEighth()));
+                     (int) (resizeButtonX()+resizeButtonWidth()-1-2*gapEighth()), (int) (resizeButtonY()+resizeButtonHeight()-1-2*gapEighth()),
+                     (int) (resizeButtonX()+resizeButtonWidth()-1-4*gapEighth()), (int) (resizeButtonY()+resizeButtonHeight()-1-2*gapEighth()));
       _zoom.drawLine(g, 1,
-                     (int) (dragAreaX()+dragAreaWidth()-1-2*gapEighth()), (int) (dragAreaY()+dragAreaHeight()-1-2*gapEighth()),
-                     (int) (dragAreaX()+dragAreaWidth()-1-2*gapEighth()), (int) (dragAreaY()+dragAreaHeight()-1-4*gapEighth()));
+                     (int) (resizeButtonX()+resizeButtonWidth()-1-2*gapEighth()), (int) (resizeButtonY()+resizeButtonHeight()-1-2*gapEighth()),
+                     (int) (resizeButtonX()+resizeButtonWidth()-1-2*gapEighth()), (int) (resizeButtonY()+resizeButtonHeight()-1-4*gapEighth()));
       _zoom.drawLine(g, 1,
-                     (int) (dragAreaX()+                  2*gapEighth()), (int) (dragAreaY()+                  2*gapEighth()),
-                     (int) (dragAreaX()+dragAreaWidth()-1-2*gapEighth()), (int) (dragAreaY()+dragAreaHeight()-1-2*gapEighth()));
+                     (int) (resizeButtonX()+                      2*gapEighth()), (int) (resizeButtonY()+                       2*gapEighth()),
+                     (int) (resizeButtonX()+resizeButtonWidth()-1-2*gapEighth()), (int) (resizeButtonY()+resizeButtonHeight()-1-2*gapEighth()));
     }
   };
-
-
-  @Override
-  public JComponent topLeft()
-  {
-    return _topLeft;
-  }
 
 
   /*---------------------------------------------------------------------*/

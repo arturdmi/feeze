@@ -60,7 +60,9 @@ VMLINUX_ARCH := $(shell uname -m | sed -e 's/aarch64/arm64/')
 
 BPFTOOL ?= /usr/sbin/bpftool
 
-JAVA_SOURCES := $(shell find $(FEEZE_SRC_JAVA) -name "*.java")
+FEEZE_GENERATED_TEXTS_JAVA = $(BUILD_DIR)/generated/java/dev/feeze/Texts.java
+GENERATED_JAVA_SOURCES := $(FEEZE_GENERATED_TEXTS_JAVA)
+JAVA_SOURCES := $(shell find $(FEEZE_SRC_JAVA) -name "*.java") $(GENERATED_JAVA_SOURCES)
 JAVA_MAIN := Feeze
 JAVA_MAIN_CLASSFILE := dev/feeze/$(JAVA_MAIN).class
 JAVA_MAIN_CLASS     := dev.feeze.$(JAVA_MAIN)
@@ -183,6 +185,17 @@ $(BUILD_DIR)/manual/readme.html: README.md
 	pandoc -f markdown -t html $^ >$@
 	diff $@ web/content/doc/pages/readme.html >/dev/null || cp $@ web/content/doc/pages/readme.html
 	cp -rf doc/images $(@D)
+
+TTTMP := $(BUILD_DIR)/tool_tip_text.tmp
+$(FEEZE_GENERATED_TEXTS_JAVA): $(FEEZE_SRC_JAVA)/dev/feeze/Texts.java.in $(BUILD_DIR)/manual/index.html
+	mkdir -p $(@D)
+	cat $< >$@
+	grep -Pzo '<h. id="starting-the-feeze-recorder">[\s\S]*?(?=<h)'             $(BUILD_DIR)/manual/index.html >$(TTTMP) && sed -i -e "s~--START_LOCAL_RECORDER_TOOLTIP--~cat $(TTTMP)~e"      $@
+	grep -Pzo '<h. id="recording-scheduling-data">[\s\S]*?(?=<h)'               $(BUILD_DIR)/manual/index.html >$(TTTMP) && sed -i -e "s~--RECORDING_SCHEDULING_DATA_TOOLTIP--~cat $(TTTMP)~e" $@
+	grep -Pzo '<h. id="displaying-recorded-data">[\s\S]*?(?=<h)'                $(BUILD_DIR)/manual/index.html >$(TTTMP) && sed -i -e "s~--DISPLAYING_RECORDED_DATA_TOOLTIP--~cat $(TTTMP)~e"  $@
+	grep -Pzo '<h. id="configuring-the-fuzion-installation">[\s\S]*?(?=<h)'     $(BUILD_DIR)/manual/index.html >$(TTTMP) && sed -i -e "s~--FUZION_HOME_TOOLTIP--~cat $(TTTMP)~e"  $@
+	grep -Pzo '<h. id="configuring-shared-memory-communication">[\s\S]*?(?=<h)' $(BUILD_DIR)/manual/index.html >$(TTTMP) && sed -i -e "s~--SHARED_MEM_TOOLTIP--~cat $(TTTMP)~e"  $@
+	rm $(TTTMP)
 
 # run the GUI. NYI: to be replaced by fuzion implementation, make taret run_control
 run: $(BUILD_DIR)/bin/feeze $(BUILD_DIR)/bin/feeze_desktop $(BUILD_DIR)/bin/$(RECORDER_BIN)
