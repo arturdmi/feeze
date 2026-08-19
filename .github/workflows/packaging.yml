@@ -138,6 +138,7 @@ jobs:
             *.deb
             *.rpm
           if-no-files-found: error
+          retention-days: 5
 
   release:
     name: Publish release
