@@ -46,16 +46,16 @@
   <div class="feeze_gui_blurred"></div>
   <header>
     <div class="wrapper">
-      <div style="margin-right: 15px;">
+      <div class="logo">
         <a href="/" title="Feeze Home">
           <img src="/images/logo.svg" width="60" alt="Feeze Logo">
         </a>
       </div>
+
+      <div class="header_title">feeze.dev — The Feeze Scheduler Tracer</div>
+
       <div id="loginStatus">
-        <form class="d-flex justify-content-between flex-wrap" id="loginform" onSubmit="return mylogin()">
-          <div>
-            feeze.dev — The Feeze Scheduler Tracer
-          </div>
+        <form id="loginform" onSubmit="return mylogin()">
           <div>
             <span id="status0">JavaScript seems to be disabled. Functionality is limited.</span>
           </div>
@@ -98,33 +98,27 @@
   <script>
     const sessionId = '##SESSION_ID##';
     const loginHeader = `
-        <form class="d-flex justify-content-between flex-wrap" id="loginform" onSubmit="return mylogin()">
+        <form id="loginform" onSubmit="return mylogin()">
+          <div id="status0"></div>
           <div>
-            feeze.dev — The Feeze Scheduler Tracer
+            <label for="login" class="visually-hidden">Login</label>
+            <input type="text"     class="logintext" required="required" maxlength="256" minlength="1" id="login"    name="login"    placeholder="login" autofocus="true" />
+            <label for="password" class="visually-hidden">Password</label>
+            <input type="password" class="logintext" required="required" maxlength="40"  minlength="8" id="password" name="password" placeholder="password" />
           </div>
-          <div class="d-flex justify-content-end flex-wrap gap-25">
-            <div id="status0"></div>
-            <div>
-              <label for="login" class="visually-hidden">Login</label>
-              <input type="text"     class="logintext" required="required" maxlength="256" minlength="1" id="login"    name="login"    rows="1" cols="20" placeholder="login"    autofocus="true" />
-              <label for="password" class="visually-hidden">Password</label>
-              <input type="password" class="logintext" required="required" maxlength="40"  minlength="8" id="password" name="password" rows="1" cols="20" placeholder="password" />
-            </div>
-            <div>
-              <input type="submit" class="loginbutton" width="200px" height="20px" name="submitlogin" value="Log in"/>
-              <a href="/register" class="loginbutton" width="200px" height="20px" name="register">Sign up</a>
-            </div>
+          <div>
+            <input type="submit" class="loginbutton" name="submitlogin" value="Log in"/>
+            <a href="/register" class="loginbutton" name="register">Sign up</a>
           </div>
         </form>
         `;
     const loggedInHeader = `
-        <form class="d-flex justify-content-between flex-wrap" id="logoutform" onSubmit="return mylogout()">
-          <div>
-            feeze.dev — The Feeze Scheduler Tracer
-          </div>
+        <form id="logoutform" onSubmit="return mylogout()">
           <div>
             <span id="status0"></span>
-            <input type="submit"   class="loginbutton" width="200px" height="20px" name="logout" value="Log out"/>
+          </div>
+          <div>
+            <input type="submit" class="loginbutton" name="logout" value="Log out"/>
           </div>
         </form>
         `;

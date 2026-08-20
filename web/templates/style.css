@@ -23,6 +23,8 @@
     --tokiwa_blue_pale: rgb(61,165,218, 0.25);
     --tokiwa_cyan_pale: rgb(115,191,184, 0.25);
 
+    /* one place to change the height of every control in the header */
+    --control_height: 1.75em;
 }
 
 .mymain {
@@ -55,44 +57,116 @@ header {
 header .wrapper{
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
+  gap: 0.75em;
+}
+
+.logo {
+  flex-shrink: 0;           /* logo keeps its size on narrow screens */
+}
+
+header .wrapper #loginStatus{
+  margin-left: auto;        /* only the form moves right, title stays put */
+  display: flex;
+  align-items: center;
+}
+
+/* login form: gap only applies between direct flex children, so both the
+   form and its inner wrappers have to be flex containers */
+header form {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: flex-end;  /* wrapped rows align to the right edge */
+  gap: 0.5em;
+}
+
+header form > div {
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+}
+
+/* text fields and buttons share height, font size and box sizing so they
+   line up exactly; only padding and colours differ */
+.logintext,
+.loginbutton {
+  box-sizing: border-box;
+  height: var(--control_height);
+  min-width: 7em;
+  font-family: inherit;
+  font-size: 1rem;
+  line-height: 1;
 }
 
 .logintext {
-  width: 118px;
   color: #333;
-  padding: 2px 2px 2px 2px;
-  line-height: 1.2;
+  padding: 0 0.5em;
   border-radius: 3px;
   border: 1px solid #ccc;
-  font-size: .8rem;
   letter-spacing: 1px;
 }
 
+/* same box for <input type="submit"> and <a>: inline-flex makes width and
+   height apply to the link too, align-items centers the label without
+   depending on a fixed line-height */
 .loginbutton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 1.25em;
   border: 0;
-  padding: 2px 20px;
-  line-height: 1.2;
-  font-size: 1rem;
   text-align: center;
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
   color: #a4a;
   border-radius: 1px;
-  background-color: rgba(220, 220, 220, 1);
+  background-color: rgb(220, 220, 220);
   background-image: linear-gradient(to top left,
                                     rgba(0, 0, 0, .2),
                                     rgba(0, 0, 0, .2) 30%,
                                     rgba(0, 0, 0, 0));
-  white-space: nowrap;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, .4);
+  /* transform and box-shadow are composited: growing on hover costs no
+     reflow and does not shift the neighbouring controls */
+  transition: transform .12s ease-out, box-shadow .12s ease-out;
 }
 
 .loginbutton:hover,
-.loginbutton:focus {
-  background-color: rgba(230, 230, 230, 1);
+.loginbutton:focus-visible {
+  background-color: rgb(200, 200, 200);
+  color: var(--tokiwa_lila);
+  transform: scale(1.08);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, .55);
+}
+
+/* override the global a:hover { font-weight: bold } so the label does not
+   change width inside the scaled box */
+a.loginbutton:hover,
+a.loginbutton:focus-visible {
+  font-weight: normal;
+  text-decoration-line: none;
+  text-shadow: none;
 }
 
 .loginbutton:active {
-  font-size: 1rem;
   color: #727;
-  background-color: rgba(205, 205, 205, 1);
+  background-color: rgb(185, 185, 185);
+  transform: scale(1.02);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, .5);
+}
+
+/* respect users who ask for less motion */
+@media (prefers-reduced-motion: reduce) {
+  .loginbutton {
+    transition: none;
+  }
+  .loginbutton:hover,
+  .loginbutton:focus-visible,
+  .loginbutton:active {
+    transform: none;
+  }
 }
 
 .navtitle{
@@ -243,6 +317,7 @@ table pre {
 /* img should not lead to overflow i.e. on mobile devices */
 img {
   max-width: 100%;
+  min-width: 40px;
 }
 
 .gray {
@@ -297,48 +372,6 @@ img {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-}
-
-.logintext {
-  width: 118px;
-  color: #333;
-  padding: 2px 2px 2px 2px;
-  line-height: 1.2;
-  border-radius: 3px;
-  border: 1px solid #ccc;
-  font-size: .8rem;
-  letter-spacing: 1px;
-}
-
-.loginbutton {
-  border: 0;
-  padding: 2px 20px;
-  line-height: 1.2;
-  font-size: 1rem;
-  text-align: center;
-  color: #a4a;
-  border-radius: 1px;
-  background-color: rgba(220, 220, 220, 1);
-  background-image: linear-gradient(to top left,
-                                    rgba(0, 0, 0, .2),
-                                    rgba(0, 0, 0, .2) 30%,
-                                    rgba(0, 0, 0, 0));
-  white-space: nowrap;
-}
-
-.loginbutton:hover,
-.loginbutton:focus {
-  background-color: rgba(230, 230, 230, 1);
-}
-
-.loginbutton:active {
-  font-size: 1rem;
-  color: #727;
-  background-color: rgba(205, 205, 205, 1);
-}
-
-.navtitle{
-  display: inline-block;
 }
 
 .mydir {
@@ -434,25 +467,6 @@ a:visited:focus {
 }
 
 
-header {
-  padding: 10px;
-  background: #24FF24;
-  background-color: #242424;
-  color: white;
-  border-color: #ff0000;
-  opacity: 0.8;
-}
-
-header .wrapper{
-  display: flex;
-  align-items: center;
-}
-
-header .wrapper #loginStatus{
-  flex-grow: 1;
-}
-
-
 .d-grid {
   display: grid;
 }
@@ -464,49 +478,106 @@ header .wrapper #loginStatus{
 
 .nav_bar
 {
+    /* fixed: columns share the width evenly, content length is ignored */
+    table-layout: fixed;
     padding: 1em 1em 0 1em;
     width: 100%;
+    border-collapse: separate;
+    border-spacing: 0.25em;
 }
 
 .nav_el
 {
- #   background-color: var(--tokiwa_blue_pale) !important;
-    padding: 0em 0.2em 0em 0.2em;
-    width: 14.4%;
+    background-color: var(--tokiwa_blue_pale) !important;
+    padding: 0;
+    width: auto;
 }
 
 .nav_el2
 {
     background-color: white;
-    padding: 0.2em 1em 0.2em 1em;
+    padding: 0.4em 0.2em;
     text-align: center;
     display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    position: relative;         /* needed for z-index to take effect */
+    transition: transform .15s ease-out,
+                box-shadow .15s ease-out,
+                color .15s ease-out;
 }
 
 .nav_el2:hover,
-.nav_el2:focus {
-    background-color: var(--tokiwa_lila_pale) !important;
+.nav_el2:focus-visible {
+    background-color: white !important;   /* keeps the plate clean */
+    color: var(--tokiwa_blue);
+    font-weight: inherit;                 /* cancels the global a:hover bold */
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px var(--tokiwa_blue);
+    z-index: 1;                           /* shadow goes over the neighbours */
 }
 
 .nav_el2:active
 {
   color: var(--tokiwa_blue);
+  transform: scale(1.02);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, .5);
 }
 
+/* two equal nav columns instead of seven */
 @media (max-width: 768px) {
   .nav_bar {
     display: block;
     padding: 0.5em;
+    border-spacing: 0;
   }
-  .nav_bar tbody,
+  .nav_bar tbody {
+    display: block;
+  }
   .nav_bar tr {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 4px;
+    /* grid items do not stretch into empty tracks */
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.25em;
   }
   .nav_el {
-    width: auto !important;   /* убрать жёсткие 14.4% */
-    flex: 1 1 auto;
-    padding: 0;
+    display: block;
+    width: auto;
+  }
+}
+
+/* header still fits in one row: let the fields share the leftover space */
+@media (min-width: 498px) and (max-width: 768px) {
+  .logintext {
+    flex: 1 1 7em;
+  }
+}
+
+/* below this width the controls no longer fit side by side: everything
+   stacks and is centered */
+@media (max-width: 497px) {
+  header .wrapper {
+    justify-content: center;
+  }
+
+  header .wrapper #loginStatus {
+    flex-basis: 100%;         /* form gets its own full-width row */
+    margin-left: 0;
+    justify-content: center;
+  }
+
+  header form,
+  header form > div {
+    flex-direction: column;
+    align-items: center;      /* not stretch: controls keep their height */
+    width: 100%;
+  }
+
+  .logintext,
+  .loginbutton {
+    min-width: 0;             /* lifts the 7em floor that caused overflow */
+    width: 100%;
+    max-width: 16em;
   }
 }
