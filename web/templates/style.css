@@ -502,16 +502,27 @@ a:visited:focus {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+    position: relative;         /* needed for z-index to take effect */
+    transition: transform .15s ease-out,
+                box-shadow .15s ease-out,
+                color .15s ease-out;
 }
 
 .nav_el2:hover,
-.nav_el2:focus {
-    background-color: var(--tokiwa_lila_pale) !important;
+.nav_el2:focus-visible {
+    background-color: white !important;   /* keeps the plate clean */
+    color: var(--tokiwa_blue);
+    font-weight: inherit;                 /* cancels the global a:hover bold */
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px var(--tokiwa_blue);
+    z-index: 1;                           /* shadow goes over the neighbours */
 }
 
 .nav_el2:active
 {
   color: var(--tokiwa_blue);
+  transform: scale(1.02);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, .5);
 }
 
 /* two equal nav columns instead of seven */
