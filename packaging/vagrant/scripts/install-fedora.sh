@@ -37,12 +37,10 @@ set -euo pipefail
 # --- Environment Variables Validation ---
 # Verify that required configuration variables are passed from Vagrant/machines.yml
 : "${FEEZE_VERSION:?not set — check 'release' in config/machines.yml}"
-: "${FEEZE_TARGET:?not set — check 'target' for this machine}"
+: "${FEEZE_ARCH:?not set — check 'arch' for this machine}"
 
 # --- Paths & Endpoints ---
-FEEZE_NAME="feeze_${FEEZE_VERSION}_${FEEZE_TARGET}"
-URL="https://github.com/tokiwa-software/feeze/releases/download/${FEEZE_NAME}/${FEEZE_NAME}.tar.gz"
-DIR="/home/vagrant/${FEEZE_NAME}"
+URL="https://github.com/tokiwa-software/feeze/releases/download/snapshot/feeze-${FEEZE_VERSION}-${FEEZE_ARCH}.rpm"
 FILES="/tmp/feeze-files"
 
 # --- Package Installation ---
@@ -53,12 +51,16 @@ echo "=== Installing System Packages ==="
 # - openjdk-25-jdk ➔ java-25-openjdk
 # - policykit-1 ➔ polkit
 dnf -y install \
-  java-25-openjdk gc curl tar \
+  java-25-openjdk gc curl  \
   xorg-x11-server-Xorg xorg-x11-xinit \
   xfwm4 xfce4-session xfce4-panel xfdesktop xfce4-terminal xfce4-settings \
   lightdm slick-greeter \
   polkit dbus-x11 accountsservice desktop-file-utils
 
+# --- Debugging Window Managers ---
+echo "=== Checking Installed Sessions & Greeters ==="
+ls /usr/share/xsessions/ || echo "EMPTY — no session installed"
+ls /usr/share/xgreeters/ || echo "EMPTY — no greeter installed"
 
 # --- Dependencies Verification ---
 echo "=== Verifying libgc Availability ==="
@@ -69,11 +71,6 @@ else
   echo "FAIL: libgc not visible to the dynamic linker"
   exit 1
 fi
-
-# --- Debugging Window Managers ---
-echo "=== Checking Installed Sessions & Greeters ==="
-ls /usr/share/xsessions/ || echo "EMPTY — no session installed"
-ls /usr/share/xgreeters/ || echo "EMPTY — no greeter installed"
 
 # --- Display Manager & Autologin Configuration ---
 echo "=== Configuring Autologin ==="
@@ -94,19 +91,24 @@ mkdir -p /etc/polkit-1/rules.d
 install -m 644 "$FILES/49-feeze.rules" /etc/polkit-1/rules.d/49-feeze.rules
 
 # --- Application Deployment ---
-echo "=== Downloading and Extracting Feeze ==="
-if [ ! -d "$DIR" ]; then
-  su - vagrant -c "cd \$HOME && curl -fL -o '${FEEZE_NAME}.tar.gz' '${URL}' && tar zxf '${FEEZE_NAME}.tar.gz'"
-fi
+echo "=== Installing Feeze ==="
+curl -fL -o /tmp/feeze.rpm "$URL"
+dnf -y install /tmp/feeze.rpm
 
-# --- Desktop Autostart Configuration ---
-echo "=== Configuring Desktop Autostart ==="
-# Generate .desktop files by replacing the placeholders with the actual path
+echo "=== Dependency Check ==="
+# The .rpm is built on an ubuntu-24.04 runner, so it links against Ubuntu's
+# glibc. This is where a portability problem against Fedora's would show up.
+BIN=/usr/share/feeze/bin/feeze_recorder
+if ldd "$BIN" | grep 'not found'; then
+  echo "FAIL: missing libraries"
+  exit 1
+fi
+echo "OK: all shared libraries resolved"
+
+echo "=== Configuring Autostart ==="
 mkdir -p /home/vagrant/.config/autostart
-for f in feeze feeze-recorder; do
-  sed "s#@FEEZE_DIR@#${DIR}#g" "$FILES/$f.desktop.tmpl" \
-    > "/home/vagrant/.config/autostart/$f.desktop"
-done
+install -m 644 "$FILES/feeze.desktop"          /home/vagrant/.config/autostart/feeze.desktop
+install -m 644 "$FILES/feeze-recorder.desktop" /home/vagrant/.config/autostart/feeze-recorder.desktop
 
 # Validate syntax of generated desktop launcher entries
 desktop-file-validate /home/vagrant/.config/autostart/feeze.desktop || echo "WARN: invalid desktop entry"

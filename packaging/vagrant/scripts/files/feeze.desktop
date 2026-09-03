@@ -26,5 +26,5 @@
 [Desktop Entry]
 Type=Application
 Name=feeze GUI
-Exec=@FEEZE_DIR@/bin/feeze
+Exec=/usr/bin/feeze
 Terminal=false

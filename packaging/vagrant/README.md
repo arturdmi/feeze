@@ -10,9 +10,10 @@ box is most of what these scripts do.
 
 ## Requirements
 
+VirtualBox, Vagrant, ~2 GB of free RAM per running machine and ~10 GB of disk.
 `sudo apt update && sudo apt install -y vagrant virtualbox`
 
-VirtualBox, Vagrant, ~2 GB of free RAM per running machine and ~10 GB of disk.
+All commands are run from packaging/vagrant/.
 
 ## Usage
 
@@ -33,7 +34,7 @@ all of them, and a host with 8 GB will start swapping and time out during boot.
 
 If the VM behaves unexpectedly (e.g., the desktop does not appear) after the initial `vagrant up`, run:
 
-```bash
+```sh
 vagrant reload
 ```
 
@@ -71,11 +72,9 @@ is mounted separately at `/tmp/feeze-files`.
 | ----------------------------- | ----------------------------------------------- |
 | `lightdm-autologin.conf`      | `/etc/lightdm/lightdm.conf.d/50-autologin.conf` |
 | `49-feeze.rules`              | `/etc/polkit-1/rules.d/49-feeze.rules`          |
-| `feeze.desktop.tmpl`          | `~/.config/autostart/feeze.desktop`             |
-| `feeze-recorder.desktop.tmpl` | `~/.config/autostart/feeze-recorder.desktop`    |
+| `feeze.desktop`               | `~/.config/autostart/feeze.desktop`             |
+| `feeze-recorder.desktop`      | `~/.config/autostart/feeze-recorder.desktop`    |
 
-The two templates contain a `@FEEZE_DIR@` placeholder, replaced with the
-directory the release was unpacked into before they are written out.
 
 ## Adding a distribution
 
@@ -86,7 +85,7 @@ machines:
   - name: "debian"
     box: "bento/debian-13"
     family: "debian"        # selects scripts/install-debian.sh
-    target: "Ubuntu_24"     # which release tarball to install
+    arch: "amd64"           # which package to download
     memory: 4096            # optional, overrides the defaults section
 ```
 
@@ -94,26 +93,22 @@ machines:
 manager with an existing one needs no new script. A new package manager needs
 one `install-<family>.sh`; the two existing scripts are the template.
 
-`target` is the distribution suffix of the release tarball, where the tag and
-the file name are the same string on GitHub — `feeze_0.001dev_Ubuntu_24`.
+`arch` selects the package to download from the snapshot release, where the
+file name carries the architecture — feeze-0.001dev-amd64.deb.
 
 ## What the provisioning does
 
-1. Installs the runtime dependencies (JDK 25, libgc) and a minimal XFCE desktop
-   with lightdm.
+1. Installs a minimal XFCE desktop with lightdm, plus the packages the feeze
+   package itself does not pull in.
 2. Configures passwordless autologin for the `vagrant` user.
-3. Downloads and unpacks the release tarball into that user's home directory.
+3. Downloads the release package and installs it with the system package
+   manager, which resolves the runtime dependencies.
 4. Writes autostart entries so the GUI comes up with the session.
 
 Several steps verify their own result.
 
 ## Notes
 
-- **`ldconfig` workaround.** `bin/feeze` looks for libgc by calling `ldconfig`
-  without a path, which a non-root Debian user cannot find, so it reports the
-  library missing when it is not. `install-debian.sh` patches the release
-  script until this is fixed upstream; the substitution is idempotent on
-  purpose.
 - **pkexec is not sudo.** The GUI's "start local recorder" button goes through
   PolicyKit, which sudo rules do not cover — hence `49-feeze.rules`. It lets the vagrant user run anything through pkexec without a password, so it belongs in a throwaway VM only.
 - **Package names differ.** `libgc1`/`gc`, `openjdk-25-jdk`/`java-25-openjdk`,

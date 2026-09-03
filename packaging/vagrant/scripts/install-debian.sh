@@ -38,14 +38,12 @@ export DEBIAN_FRONTEND=noninteractive
 # --- Environment Variables Validation ---
 # Verify that required configuration variables are passed from Vagrant/machines.yml
 : "${FEEZE_VERSION:?not set — check 'release' in config/machines.yml}"
-: "${FEEZE_TARGET:?not set — check 'target' for this machine}"
+: "${FEEZE_ARCH:?not set — check 'arch' for this machine}"
 
 # --- Paths & Endpoints ---
-# The GitHub release tag and asset tarball use the same naming convention.
-# Suffix targets the OS distribution (e.g., Ubuntu_24), not the architecture.
-FEEZE_NAME="feeze_${FEEZE_VERSION}_${FEEZE_TARGET}"
-URL="https://github.com/tokiwa-software/feeze/releases/download/${FEEZE_NAME}/${FEEZE_NAME}.tar.gz"
-DIR="/home/vagrant/${FEEZE_NAME}"
+# The snapshot release is rebuilt from main, so the suffix is the architecture,
+# not the distribution it was built on.
+URL="https://github.com/tokiwa-software/feeze/releases/download/snapshot/feeze-${FEEZE_VERSION}-${FEEZE_ARCH}.deb"
 FILES="/tmp/feeze-files"
 
 # --- Package Manager Pre-configuration ---
@@ -60,9 +58,9 @@ apt-get update -qq
 # Executing within a subshell (...) prevents sourcing from overwriting local script variables.
 DISTRO_ID="$(. /etc/os-release && echo "$ID")"
 case "$DISTRO_ID" in
-  ubuntu) POLKIT_PKGS="policykit-1" ;;
-  debian) POLKIT_PKGS="polkitd pkexec" ;;
-  *)      POLKIT_PKGS="polkitd" ;;
+  ubuntu) POLKIT_PKGS=(policykit-1) ;;
+  debian) POLKIT_PKGS=(polkitd pkexec) ;;
+  *)      POLKIT_PKGS=(polkitd) ;;
 esac
 
 # --- Package Installation ---
@@ -71,14 +69,17 @@ echo "=== Installing System Packages ==="
 # Metapackages usually pull X server and drivers as recommendations. Omitting them
 # breaks lightdm with "Can't launch X server". Every dependency is listed explicitly.
 apt-get install -y --no-install-recommends \
-  openjdk-25-jdk libgc1 curl tar \
+  openjdk-25-jdk libgc1 curl \
   xserver-xorg xserver-xorg-core xinit \
   xserver-xorg-video-vmware xserver-xorg-video-fbdev \
   xfce4 xfce4-session xfce4-terminal \
   lightdm slick-greeter \
   libxrender1 libxtst6 libxi6 \
-  $POLKIT_PKGS dbus-x11 accountsservice desktop-file-utils
+  "${POLKIT_PKGS[@]}" dbus-x11 accountsservice desktop-file-utils
 
+echo "=== Checking Installed Sessions & Greeters ==="
+ls /usr/share/xsessions/ || echo "EMPTY — XFCE is not installed"
+ls /usr/share/xgreeters/ || echo "EMPTY — no greeter installed"
 # --- Dependencies Verification ---
 # Explicit path calling: /sbin is omitted from standard user PATH environments on Debian.
 /sbin/ldconfig
@@ -110,30 +111,23 @@ echo "=== Configuring Polkit Rules ==="
 mkdir -p /etc/polkit-1/rules.d
 install -m 644 "$FILES/49-feeze.rules" /etc/polkit-1/rules.d/49-feeze.rules
 
-# --- Application Deployment ---
-echo "=== Downloading and Extracting Feeze ==="
-# Provisioning runs as root, but application scope belongs to the 'vagrant' user.
-# Skip execution if target directory exists to ensure rapid iterative provisioning runs.
-if [ ! -d "$DIR" ]; then
-  su - vagrant -c "cd \$HOME && curl -fL -o '${FEEZE_NAME}.tar.gz' '${URL}' && tar zxf '${FEEZE_NAME}.tar.gz'"
+echo "=== Installing Feeze ==="
+curl -fL -o /tmp/feeze.deb "$URL"
+apt-get install -y /tmp/feeze.deb
+
+echo "=== Dependency Check ==="
+BIN=/usr/share/feeze/bin/feeze_recorder
+if ldd "$BIN" | grep 'not found'; then
+  echo "FAIL: missing libraries"
+  exit 1
 fi
+echo "OK: all shared libraries resolved"
 
-# --- Upstream Fix / Path Patching ---
-# Workaround for ldconfig binary paths:
-# bin/feeze evaluates libgc via an absolute-less `ldconfig` call, failing under non-root users.
-# The first regex expression strips preexisting /sbin/ prefixes to ensure execution idempotency.
-sed -i -e 's#\(/sbin/\)*ldconfig#ldconfig#g' \
-       -e 's#(ldconfig -p#(/sbin/ldconfig -p#' "${DIR}/bin/feeze"
-grep -n 'ldconfig' "${DIR}/bin/feeze"
-
-# --- Desktop Autostart Configuration ---
-echo "=== Configuring Desktop Autostart ==="
-# XFCE executes all valid desktop configurations found inside this path upon session initialization
+echo "=== Configuring Autostart ==="
+# XFCE launches everything in ~/.config/autostart when the session starts.
 mkdir -p /home/vagrant/.config/autostart
-for f in feeze feeze-recorder; do
-  sed "s#@FEEZE_DIR@#${DIR}#g" "$FILES/$f.desktop.tmpl" \
-    > "/home/vagrant/.config/autostart/$f.desktop"
-done
+install -m 644 "$FILES/feeze.desktop"          /home/vagrant/.config/autostart/feeze.desktop
+install -m 644 "$FILES/feeze-recorder.desktop" /home/vagrant/.config/autostart/feeze-recorder.desktop
 
 # Validate structure of generated desktop launcher profiles to catch silent validation failures
 desktop-file-validate /home/vagrant/.config/autostart/feeze.desktop || echo "WARN: invalid desktop entry"
