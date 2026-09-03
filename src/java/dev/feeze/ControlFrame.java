@@ -373,6 +373,7 @@ public class ControlFrame extends JFrame
         setVisible(true);
 
         var _listener = new ControlListener(this);
+        SwingUtils.enableFullscreenToggle(this);
       });
   }
 

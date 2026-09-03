@@ -123,6 +123,7 @@ public class FeezeDataFrame extends JFrame
 
         setVisible(true);
         var ignore = Feeze._openDataFrames_.incrementAndGet();
+        SwingUtils.enableFullscreenToggle(this);
       });
   }
 
