@@ -344,7 +344,19 @@ public class ControlFrame extends JFrame
 
         var kl = new KeyListener()
           {
-            @Override public void keyPressed(KeyEvent key) { }
+            @Override public void keyPressed(KeyEvent key)
+            {
+              if (key.getKeyCode() == KeyEvent.VK_F11)
+                {
+                  // toggle fullscreen
+                  var device = getGraphicsConfiguration().getDevice();
+                  device.setFullScreenWindow(
+                    device.getFullScreenWindow() == ControlFrame.this
+                      ? null
+                      : ControlFrame.this
+                  );
+                }
+            }
             @Override public void keyReleased(KeyEvent key) { }
             @Override public void keyTyped(KeyEvent key) {
               if (key.getKeyChar() == 'w' - 0x60)
