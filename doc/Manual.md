@@ -86,11 +86,11 @@ To run feeze, you will need to install
   To install libgc.so, on Ubuntu, do
 
       > sudo apt update
-      > sudo apt install libgc
+      > sudo apt install libgc1
 
   on Fedora, do
 
-      > sudo dnf install libgc
+      > sudo dnf install gc
 
   This is the Boehm-Demers-Weiser's GC that is currently used by Fuzion until an
   exact GC is available.
