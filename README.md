@@ -16,7 +16,7 @@ it is also a goal to help to improve general throughput.
 A picture says more than a thousand words, so let's start with a screenshot of a
 trace taken while a graphical Java application is running using wayland:
 
-<img src="doc/images/scheduing_data_window.png" alt="sample scheduling data window" width="1105" />
+<img src="doc/images/scheduling_data_window.png" alt="sample scheduling data window" width="1105" />
 
 What we see on the left is a list of all threads group by users (`fridi` is the
 user name here), processes and threads. The top shows the time axis in µsec
@@ -63,13 +63,23 @@ feeze (third-person singular simple present feezes, present participle feezing, 
 
 A nice looking cake shop in Japan: [フィーゼ](https://nasuguru.com/feeze/).
 
+## Installation
+
+Releases are published under
+[feeze releases](https://github.com/tokiwa-software/feeze/releases) as `.deb`,
+`.rpm` and `.tar.gz` for `amd64` and `arm64`.
+
+For installation instructions, required dependencies and removal, see
+[Download and Installation](doc/Manual.md#download-and-installation) in the
+feeze user manual.
+
 ## Building
 
 ### Requirements
 
 * OpenJDK version 25 or later, the Java environment used for the GUI
 
-* `libgc1.so` (e.g. package `libgc` on Ubuntu, `libgc1` on Debian, `gc` on Arch)
+* `libgc1.so` (e.g. package `libgc1` on Ubuntu or Debian, `gc` on Arch)
   The Boehm-Demers-Weiser's GC that is currently used by Fuzion until an exact GC is available
 
 * bpftool for the currently running kernel
