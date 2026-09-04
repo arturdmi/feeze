@@ -11,22 +11,52 @@ Feeze is an interactive graphical thread and scheduling analysis tool using eBPF
 Downloadable releases will be published on GitHub under
 [feeze releases](https://github.com/tokiwa-software/feeze/releases).
 
+| file                        | intended for                           |
+|-----------------------------|----------------------------------------|
+| `feeze-VERSION-ARCH.deb`    | Debian, Ubuntu and derivatives         |
+| `feeze-VERSION-ARCH.rpm`    | Fedora, RHEL, openSUSE and derivatives |
+| `feeze-VERSION-ARCH.tar.gz` | any other distribution, no root needed |
+
+`VERSION` is the feeze version and `ARCH` is `amd64` or `arm64`. If unsure which
+one you need, use `dpkg --print-architecture`, or `uname -m` where `x86_64`
+means `amd64` and `aarch64` means `arm64`.
+
+### Installation from deb package
+
+On Debian, Ubuntu and derivatives, install the package using
+
+    > sudo apt install ./feeze-0.001dev-amd64.deb
+
+Keep the leading `./` and use `apt`, not `dpkg -i`: `apt` resolves the
+dependencies declared by the package, `dpkg` does not and would leave feeze
+unconfigured.
+
+### Installation from rpm package
+
+On Fedora and RHEL, install the package using
+
+    > sudo dnf install ./feeze-0.001dev-amd64.rpm
+
+on openSUSE, use
+
+    > sudo zypper install ./feeze-0.001dev-amd64.rpm
+
 ### Installation from tarball
 
 Installing feeze from a tarball gives you most control over where feeze will get
 installed. You will need to unpack the archive using
 
-    # tar zxf feeze_VERSION_TARGET.tar.gz
+    # tar zxf feeze-VERSION-ARCH.tar.gz
 
-where `VERSION` is the feeze version and `TARGET` is the
-target Linux version it was built for. For version `0.001dev` built
-for `Ubuntu_24`, you will have to use
+where `VERSION` is the feeze version and `ARCH` is the
+architecture it was built for. For version `0.001dev` built
+for `amd64`, you will have to use
 
-    # tar zxf feeze_0.001dev_Ubuntu_24.tar.gz
+    # tar zxf feeze-0.001dev-amd64.tar.gz
 
-The result will be a directory with a name like `feeze_VERSION_TARGET`, so in
-our example of version `0.001dev` build for `Ubuntu_24` the directory name will
-be `feeze_0.001dev_Ubuntu_24`.
+The result will be a directory with a name like `feeze-VERSION-ARCH`, so in
+our example of version `0.001dev` build for `amd64` the directory name will
+be `feeze-0.001dev-amd64`.
 
 ### Required Dependencies
 
@@ -69,7 +99,7 @@ To run feeze, you will need to install
 
 To start the feeze GUI, run the script `feeze` in the `bin` directory of the installation, e.g., using
 
-    # ./feeze_0.001dev_Ubuntu_24/bin/feeze
+    # ./feeze-0.001dev-amd64/bin/feeze
 
 ## Feeze Control Window
 

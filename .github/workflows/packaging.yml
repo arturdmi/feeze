@@ -150,6 +150,7 @@ jobs:
     permissions:
       contents: write
     steps:
+      - uses: actions/checkout@v5
       - uses: actions/download-artifact@v4
         with:
           pattern: packages-linux-*
@@ -189,5 +190,6 @@ jobs:
           prerelease: ${{ steps.tag.outputs.pre }}
           makeLatest: ${{ steps.tag.outputs.latest }}
           artifacts: artifacts/*
+          bodyFile: packaging/release-body.md
           generateReleaseNotes: false
           token: ${{ secrets.GITHUB_TOKEN }}
