@@ -348,6 +348,8 @@ The following key-combination may be used as shortcuts:
 
 * <kbd>Ctrl</kbd>+<kbd>Q</kbd> quit feeze GUI
 
+* <kbd>F11</kbd> toggle fullscreen
+
 Have fun!
 
 <!--  LocalWords:  img src feeze eBPF zxf dev OpenJDK libgc Boehm Demers GC NYI Weiser's Fuzion recoder sudo fuzion msg fuzion's Xwaylend firefox wakesup Ctrl  -->
