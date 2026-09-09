@@ -12,7 +12,7 @@ throughput.</p>
 <p>A picture says more than a thousand words, so let’s start with a
 screenshot of a trace taken while a graphical Java application is
 running using wayland:</p>
-<p><img src="doc/images/scheduing_data_window.png" alt="sample scheduling data window" width="1105" /></p>
+<p><img src="doc/images/scheduling_data_window.png" alt="sample scheduling data window" width="1105" /></p>
 <p>What we see on the left is a list of all threads group by users
 (<code>fridi</code> is the user name here), processes and threads. The
 top shows the time axis in µsec resolution. Threads that are running are
@@ -61,15 +61,22 @@ a piece of work with passion.</li>
 <h3 id="other-uses">Other uses</h3>
 <p>A nice looking cake shop in Japan: <a
 href="https://nasuguru.com/feeze/">フィーゼ</a>.</p>
+<h2 id="installation">Installation</h2>
+<p>Releases are published under <a
+href="https://github.com/tokiwa-software/feeze/releases">feeze
+releases</a> as <code>.deb</code>, <code>.rpm</code> and
+<code>.tar.gz</code> for <code>amd64</code> and <code>arm64</code>.</p>
+<p>For installation instructions, required dependencies and removal, see
+<a href="doc/Manual.md#download-and-installation">Download and
+Installation</a> in the feeze user manual.</p>
 <h2 id="building">Building</h2>
 <h3 id="requirements">Requirements</h3>
 <ul>
 <li><p>OpenJDK version 25 or later, the Java environment used for the
 GUI</p></li>
-<li><p><code>libgc1.so</code> (e.g. package <code>libgc</code> on
-Ubuntu, <code>libgc1</code> on Debian, <code>gc</code> on Arch) The
-Boehm-Demers-Weiser’s GC that is currently used by Fuzion until an exact
-GC is available</p></li>
+<li><p><code>libgc1.so</code> (e.g. package <code>libgc1</code> on
+Ubuntu or Debian, <code>gc</code> on Arch) The Boehm-Demers-Weiser’s GC
+that is currently used by Fuzion until an exact GC is available</p></li>
 <li><p>bpftool for the currently running kernel</p></li>
 <li><p>libelf (required by libbpf)</p></li>
 <li><p>pandoc (only when changing the documentation, used to create html
