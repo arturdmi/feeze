@@ -41,7 +41,7 @@
 }
 @media (min-width: 769px) {
   .mymain {
-    margin: 40px;
+    margin: 40px 40px 0px 40px;  /* top right bot left */
   }
 }
 
@@ -255,6 +255,42 @@ body {
   padding: 0;
   line-height: 1.25;
   background-color: var(--bgcol);
+}
+
+.footer
+{
+  /* fixed: columns share the width evenly, content length is ignored */
+  table-layout: fixed;
+/*  width: 100%; */
+  border-collapse: separate;
+  border-spacing: 0.25em;
+}
+
+.footer a
+{
+  font-size: small;
+  font-weight: normal;
+  padding: 0.4em 0.2em;
+  text-align: center;
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  position: relative;         /* needed for z-index to take effect */
+  transition: transform .15s ease-out,
+              box-shadow .15s ease-out,
+              color .15s ease-out;
+}
+
+.footer a:hover,
+.foooter a:focus
+{
+  cursor: pointer;
+  font-weight: bold;
+}
+.foooter a:active
+{
+  color: #99f;
 }
 
 .feeze_gui_blurred {
