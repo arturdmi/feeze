@@ -176,7 +176,7 @@ jobs:
         uses: ncipollo/release-action@339a81892b84b4eeb0f6e744e4574d79d0d9b8dd
         with:
           tag: "v${{ steps.getversion.outputs.version }}"
-          name: feeze_${{ steps.getversion.outputs.version }}"
+          name: "feeze_${{ steps.getversion.outputs.version }}"
           prerelease: ${{ steps.getversion.outputs.prerelease }}
           artifacts: artifacts/*
           bodyFile: packaging/release-body.md
