@@ -27,6 +27,7 @@
 name: Build feeze packages
 
 on:
+  pull_request:       # will skip jobs.release see below
   workflow_dispatch:
 
 permissions:
@@ -138,9 +139,11 @@ jobs:
 
   release:
     name: Publish release
+
     # Everything except pull requests: forks do not get contents:write and the
     # upload would fail with 403.
     if: github.event_name != 'pull_request'
+
     needs: [facts, package-linux]
     runs-on: ubuntu-24.04
     permissions:
