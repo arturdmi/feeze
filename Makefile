@@ -79,6 +79,10 @@ $(BUILD_DIR)/%.md: $(FEEZE_REPO)/%.md
 show_version_and_platform:
 	@echo $(VERSION_AND_PLATFORM)
 
+.PHONY: show_version
+show_version:
+	@echo $(VERSION)
+
 $(LIBBPF)/README.md $(VMLINUX_H)/README.md:
 	@echo $@
 	@echo "*** error: missing submodule libbpf and vmlinux.h. Please do "

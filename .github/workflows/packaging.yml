@@ -168,7 +168,7 @@ jobs:
       - name: Read VERSION file
         id: getversion
         run: |
-          version="$(make show_version_and_platform)"
+          version="$(make show_version)"
           echo "version=$version" >> $GITHUB_OUTPUT
           echo $version | grep dev && echo "prerelease=true" >> $GITHUB_OUTPUT || echo "prerelease=false" >> $GITHUB_OUTPUT
 
