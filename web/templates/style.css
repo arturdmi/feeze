@@ -41,7 +41,7 @@
 }
 @media (min-width: 769px) {
   .mymain {
-    margin: 40px;
+    margin: 40px 40px 0px 40px;  /* top right bot left */
   }
 }
 
@@ -194,7 +194,7 @@ a.loginbutton:focus-visible {
 
 h1 {
   font-family: 'Carme', sans-serif;
-  margin: 0;
+  margin: 0.5em 0 0 0;
   padding: 0;
   line-height: 1.5;
   background-color: var(--tokiwa_blue_pale) !important;
@@ -386,7 +386,7 @@ img {
 .innerlink:hover,
 .innerlink:focus {
   text-decoration-color: #44f;
-  font-weight: bold;
+  text-shadow: 0 0 0.1px currentColor, 0 0 0.1px currentColor;  /* imitate boldness with shadow to avoid width change when hovering */
   color: #44f;
 }
 .innerlink:active {
@@ -407,7 +407,7 @@ li   a {
 a:hover,
 a:focus {
   cursor: pointer;
-  font-weight: bold;
+  text-shadow: 0 0 0.1px currentColor, 0 0 0.1px currentColor;  /* imitate boldness with shadow to avoid width change when hovering */
 }
 .navtitle a:hover,
 .navtitle a:focus,
@@ -427,10 +427,14 @@ a:active {
   cursor: pointer;
 }
 
+a:visited {
+  color: #006;
+}
+
 a:visited:hover,
 a:visited:focus {
   cursor: pointer;
-  font-weight: bold;
+  text-shadow: 0 0 0.1px currentColor, 0 0 0.1px currentColor;  /* imitate boldness with shadow to avoid width change when hovering */
 }
 
 .nav {
@@ -580,4 +584,38 @@ a:visited:focus {
     width: 100%;
     max-width: 16em;
   }
+}
+
+.footer
+{
+  /* fixed: columns share the width evenly, content length is ignored */
+  table-layout: fixed;
+/*  width: 100%; */
+  border-collapse: separate;
+  border-spacing: 0.25em;
+}
+
+.footer a
+{
+  color: #555;
+  font-size: small;
+  font-weight: normal;
+  padding: 0.4em 0.2em;
+  text-align: center;
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  position: relative;         /* needed for z-index to take effect */
+  transition: transform .15s ease-out,
+              box-shadow .15s ease-out,
+              color .15s ease-out;
+}
+
+.footer a:hover,
+.foooter a:focus
+{
+  color: black;
+  cursor: pointer;
+  text-shadow: 0 0 0.5px black, 0 0 0.5px black;  /* imitate boldness with shadow to avoid width change when hovering */
 }
