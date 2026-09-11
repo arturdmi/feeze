@@ -13,7 +13,7 @@ pipeline {
     stage('Build and deploy Docker image') {
       steps {
         script {
-          docker.build("tokiwa-software/feeze-web:${env.BRANCH_NAME}", "-f Dockerfile.web .")
+          docker.build("tokiwa-software/feeze-web:${env.BRANCH_NAME}", "-f web/Dockerfile .")
 
           if (env.BRANCH_NAME == 'main') {
             sshagent(credentials: ['5b49490a-ba7a-49be-af2f-1f5a7de4b8b9']) {
