@@ -27,10 +27,7 @@
 name: Build feeze packages
 
 on:
-  push:
-    branches: [packages-ci]
-    tags: ['v*']
-  pull_request:
+  pull_request:       # will skip jobs.release see below
   workflow_dispatch:
 
 permissions:
@@ -142,9 +139,11 @@ jobs:
 
   release:
     name: Publish release
+
     # Everything except pull requests: forks do not get contents:write and the
     # upload would fail with 403.
     if: github.event_name != 'pull_request'
+
     needs: [facts, package-linux]
     runs-on: ubuntu-24.04
     permissions:
@@ -166,29 +165,19 @@ jobs:
               || { echo "::error::missing artifact matching $p"; exit 1; }
           done
 
-      - name: Choose tag name
-        id: tag
+      - name: Read VERSION file
+        id: getversion
         run: |
-          set -eu
-          if [ "$GITHUB_REF_TYPE" = tag ]; then
-            echo "name=$GITHUB_REF_NAME" >>"$GITHUB_OUTPUT"
-            echo "pre=false"             >>"$GITHUB_OUTPUT"
-            echo "latest=true"           >>"$GITHUB_OUTPUT"
-          else
-            # A single moving tag: the release is replaced on every push instead
-            # of accumulating one entry per commit.
-            echo "name=snapshot"          >>"$GITHUB_OUTPUT"
-            echo "pre=true"              >>"$GITHUB_OUTPUT"
-            echo "latest=false"          >>"$GITHUB_OUTPUT"
-          fi
+          version="$(make show_version_and_platform)"
+          echo "version=$version" >> $GITHUB_OUTPUT
+          echo $version | grep dev && echo "prerelease=true" >> $GITHUB_OUTPUT || echo "prerelease=false" >> $GITHUB_OUTPUT
 
       - name: Publish release
         uses: ncipollo/release-action@339a81892b84b4eeb0f6e744e4574d79d0d9b8dd
         with:
-          tag: ${{ steps.tag.outputs.name }}
-          name: ${{ steps.tag.outputs.name == 'snapshot' && format('snapshot {0} ({1})', needs.facts.outputs.version, github.sha) || steps.tag.outputs.name }}
-          prerelease: ${{ steps.tag.outputs.pre }}
-          makeLatest: ${{ steps.tag.outputs.latest }}
+          tag: "v${{ steps.getversion.outputs.version }}"
+          name: "feeze_${{ steps.getversion.outputs.version }}"
+          prerelease: ${{ steps.getversion.outputs.prerelease }}
           artifacts: artifacts/*
           bodyFile: packaging/release-body.md
           generateReleaseNotes: false
